@@ -1,0 +1,11 @@
+{
+  "vendors": [
+    { "id": "v1", "name": "Vendor One", "email": "vendor1@example.com" },
+    { "id": "v2", "name": "Vendor Two", "email": "vendor2@example.com" }
+  ],
+  "products": [
+    { "id": "p1", "name": "iPhone", "vendorId": "v1" },
+    { "id": "p2", "name": "TV", "vendorId": "v1" },
+    { "id": "p3", "name": "Shoes", "vendorId": "v2" }
+  ]
+}
