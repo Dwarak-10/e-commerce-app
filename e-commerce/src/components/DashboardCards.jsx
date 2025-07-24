@@ -10,10 +10,10 @@ const Card = ({ title, value }) => (
 export default function DashboardCards() {
   return (
     <Grid container spacing={3} padding={3}>
-      <Grid item xs={12} sm={6} md={3}><Card title="Users" value="120" /></Grid>
-      <Grid item xs={12} sm={6} md={3}><Card title="Orders" value="58" /></Grid>
-      <Grid item xs={12} sm={6} md={3}><Card title="Vendors" value="10" /></Grid>
-      <Grid item xs={12} sm={6} md={3}><Card title="Earnings" value="$3.2k" /></Grid>
+      <Grid  size={{ xs:12, sm:6, md:3}}><Card title="Users" value="120" /></Grid>
+      <Grid  size={{ xs:12, sm:6, md:3}}><Card title="Orders" value="58" /></Grid>
+      <Grid  size={{ xs:12, sm:6, md:3}}><Card title="Vendors" value="10" /></Grid>
+      <Grid  size={{ xs:12, sm:6, md:3}}><Card title="Earnings" value="$3.2k" /></Grid>
     </Grid>
   )
 }

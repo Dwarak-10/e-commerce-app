@@ -2,6 +2,8 @@
 import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import api from "../utlis/api"
+import ProductCard from "./ProductCard"
+import { Box } from "@mui/material"
 
 const fetchVendorProducts = async (vendorId) => {
   const { data } = await api.get(`/products?vendorId=${vendorId}`)
@@ -21,11 +23,14 @@ export default function VendorProducts() {
   return (
     <div className="p-6">
       <h2 className="text-xl font-semibold mb-4">Products for Vendor ID: {vendorId}</h2>
-      <ul className="grid grid-cols-2 gap-4">
+      <ul className="flex flex-wrap gap-10">
         {products.map((p) => (
-          <li key={p.id} className="border p-3 rounded bg-gray-50">{p.name}</li>
+          <div key={p.id}>
+            <ProductCard  product={p} />
+          </div>
         ))}
       </ul>
+
     </div>
   )
 }

@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AdminDashboard from "./pages/AdminDashboard";
 import VendorProducts from "./components/VendorProducts";
 import VendorDashboard from "./pages/VendorDashboard";
+import Profile from "./pages/Profile";
 
 function App() {
   const queryClient = new QueryClient()
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/vendor/:vendorId" element={<VendorProducts />} />
                 <Route path="/vendor" element={<VendorDashboard />} />
+                <Route path="/profile" element={<Profile />} />
               </Route>
             </Routes>
           </BrowserRouter>

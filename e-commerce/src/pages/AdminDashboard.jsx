@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query"
 import api from "../utlis/api"
 import DashboardCards from "../components/DashboardCards"
 import DashboardLayout from "../components/DashboardLayout"
+import { Button } from "@mui/material"
+import ProductStatsChart from "../components/ProductStatsChart"
 const fetchVendors = async () => {
   const { data } = await api.get("/vendors")
   return data
@@ -25,13 +27,16 @@ export default function AdminDashboard() {
           <li key={v.id} className="border p-3 rounded bg-white">
             <p>Name: {v.name}</p>
             <p>Email: {v.email}</p>
-            <a href={`/admin/vendor/${v.id}`} className="text-blue-600 underline">
+            <Button href={`/admin/vendor/${v.id}`} sx={{color:'white', background:'#657376ff'}}>
+             {/* <div className="text-white bg-gray-600 p-2 rounded-sm"> */}
               View Products
-            </a>
+              {/* </div>  */}
+            </Button>
           </li>
         ))}
       </ul>
       <DashboardCards/>
+      <ProductStatsChart />
     </div>
   )
 }
