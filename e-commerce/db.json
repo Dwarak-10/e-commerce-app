@@ -43,7 +43,7 @@
   ],
   "products": [
     {
-      "id": 1,
+      "id": "1",
       "vendorId": "v1",
       "title": "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops",
       "price": 109.95,
@@ -56,7 +56,7 @@
       }
     },
     {
-      "id": 2,
+      "id": "2",
       "vendorId": "v1",
       "title": "Mens Casual Premium Slim Fit T-Shirts ",
       "price": 22.3,
@@ -69,7 +69,7 @@
       }
     },
     {
-      "id": 3,
+      "id": "3",
       "vendorId": "v1",
       "title": "Mens Cotton Jacket",
       "price": 55.99,
@@ -82,7 +82,7 @@
       }
     },
     {
-      "id": 4,
+      "id": "4",
       "vendorId": "v1",
       "title": "Mens Casual Slim Fit",
       "price": 15.99,
@@ -95,7 +95,7 @@
       }
     },
     {
-      "id": 5,
+      "id": "5",
       "vendorId": "v1",
       "title": "John Hardy Women's Legends Naga Gold & Silver Dragon Station Chain Bracelet",
       "price": 695,
@@ -108,7 +108,7 @@
       }
     },
     {
-      "id": 6,
+      "id": "6",
       "vendorId": "v1",
       "title": "Solid Gold Petite Micropave ",
       "price": 168,
@@ -121,7 +121,7 @@
       }
     },
     {
-      "id": 7,
+      "id": "7",
       "vendorId": "v1",
       "title": "White Gold Plated Princess",
       "price": 9.99,
@@ -134,7 +134,7 @@
       }
     },
     {
-      "id": 8,
+      "id": "8",
       "vendorId": "v1",
       "title": "Pierced Owl Rose Gold Plated Stainless Steel Double",
       "price": 10.99,
@@ -147,7 +147,7 @@
       }
     },
     {
-      "id": 9,
+      "id": "9",
       "vendorId": "v1",
       "title": "WD 2TB Elements Portable External Hard Drive - USB 3.0 ",
       "price": 64,
@@ -160,7 +160,7 @@
       }
     },
     {
-      "id": 10,
+      "id": "10",
       "vendorId": "v1",
       "title": "SanDisk SSD PLUS 1TB Internal SSD - SATA III 6 Gb/s",
       "price": 109,
@@ -170,6 +170,19 @@
       "rating": {
         "rate": 2.9,
         "count": 470
+      }
+    },
+    {
+      "id": "69fe",
+      "title": "Cricket bat",
+      "price": 990,
+      "description": "A cricket bat is a specialized piece of equipment used in the sport of cricket by a batter to hit the ball. It typically consists of a long, flat-fronted blade, traditionally made of willow wood, attached to a cane handle.",
+      "category": "Sport",
+      "image": "https://gmcricket.in/media/catalog/product/cache/757ea7d2b7282843694bdb6de7a23598/d/i/diamond-excalibur-english-willow-cricket-bat_9.jpg",
+      "vendorId": "v1",
+      "rating": {
+        "rate": 0,
+        "count": 0
       }
     }
   ]

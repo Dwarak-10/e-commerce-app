@@ -1,8 +1,11 @@
 
 import axios from "axios"
 
-const api = axios.create({
+export const api = axios.create({
     baseURL: "http://localhost:4000",
 })
 
-export default api
+export const createProduct = async (product) => {
+    const {data} = await api.post("/products",product)
+    return data
+}

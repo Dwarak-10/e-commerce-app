@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import api from "../utlis/api"
+import {api} from "../utlis/api"
 import DashboardCards from "../components/DashboardCards"
 import DashboardLayout from "../components/DashboardLayout"
 import { Button } from "@mui/material"

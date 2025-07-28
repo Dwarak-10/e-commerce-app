@@ -2,19 +2,19 @@ import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup"
 
-const validationSchema = (formName) => Yup.object({
+const validationSchema = (isLoginForm) => Yup.object({
     username: Yup.string().when([], {
-        is: () => formName === "signup",
+        is: () => isLoginForm,
         then: (schema) => schema.required("Username is required"),
         otherwise: (schema) => schema.notRequired(),
     }),
     email: Yup.string().email("Invalid email").required("Email is required"),
     password: Yup.string().min(6, "Minimum 6 characters").required("Password is required"),
     role: Yup.string().when([], {
-        is: () => formName === "signup",
+        is: () => isLoginForm,
         then: (schema) =>
             schema
-                .oneOf(["admin", "vendor"], "Role is required")
+                .oneOf(["admin", "vendor", "customer"], "Role is required")
                 .required("Role is required"),
         otherwise: (schema) => schema.notRequired(),
     })
@@ -22,16 +22,16 @@ const validationSchema = (formName) => Yup.object({
 
 export default function LoginForm() {
     const [selectedRole, setSelectedRole] = useState("");
-    const [formName, setFormName] = useState("signup");
+    const [isLoginForm, setIsLoginForm] = useState(true);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4" >
             <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
-                <h2 className="text-2xl font-semibold text-center mb-6">{formName === "login" ? "Login" : "Signup"}</h2>
+                <h2 className="text-2xl font-semibold text-center mb-6">{isLoginForm ? "Login" : "Signup"}</h2>
 
                 <Formik
                     initialValues={{ username: "", email: "", password: "", role: "" }}
-                    validationSchema={validationSchema(formName)}
+                    validationSchema={validationSchema(!isLoginForm)}
                     onSubmit={(values) => {
                         console.log("Form Data:", values);
                     }}
@@ -40,7 +40,7 @@ export default function LoginForm() {
                         <Form className="space-y-4">
 
                             {/* Username */}
-                            {formName !== "login" && <div>
+                            {!isLoginForm && <div>
                                 <label className="block font-medium">Username</label>
                                 <Field
                                     name="username"
@@ -72,7 +72,7 @@ export default function LoginForm() {
                             </div>
 
                             {/* Role Selection Buttons */}
-                            {formName !== "login" && <div>
+                            {!isLoginForm && <div>
                                 <label className="block font-medium mb-1">Select Role</label>
                                 <div className="flex gap-4">
                                     <button
@@ -102,17 +102,30 @@ export default function LoginForm() {
                                     >
                                         Vendor
                                     </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedRole("customer");
+                                            setFieldValue("role", "customer");
+                                        }}
+                                        className={`flex-1 p-2 border rounded-md cursor-pointer ${selectedRole === "customer"
+                                            ? "bg-amber-400 text-white"
+                                            : "bg-gray-100 text-gray-700"
+                                            }`}
+                                    >
+                                        Customer
+                                    </button>
                                 </div>
                                 <ErrorMessage name="role" component="div" className="text-red-500 text-sm mt-1" />
                             </div>}
 
                             <div className="">
 
-                                {formName === "login" ? <span className="">New user?
-                                    <button type="button" className="ms-2 cursor-pointer hover:text-red-800" onClick={() => { setFormName("signup") }}>click here</button>
+                                {isLoginForm ? <span className="">New user?
+                                    <button type="button" className="ms-2 cursor-pointer hover:text-red-800" onClick={() => { setIsLoginForm(value => !value) }}>click here</button>
                                 </span> :
                                     <span className="">Already a user?
-                                        <button type="button" className="ms-2 cursor-pointer hover:text-red-800" onClick={() => { setFormName("login") }}>click here</button>
+                                        <button type="button" className="ms-2 cursor-pointer hover:text-red-800" onClick={() => { setIsLoginForm(value => !value) }}>click here</button>
                                     </span>
                                 }
                             </div>

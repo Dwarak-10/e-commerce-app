@@ -8,6 +8,10 @@ import AdminDashboard from "./pages/AdminDashboard";
 import VendorProducts from "./components/VendorProducts";
 import VendorDashboard from "./pages/VendorDashboard";
 import Profile from "./pages/Profile";
+import Feed from "./pages/Feed";
+import ProductView from "./pages/ProdcutView";
+import CartPage from "./pages/CartPage";
+import AddProductPage from "./pages/AddProductPage";
 
 function App() {
   const queryClient = new QueryClient()
@@ -24,6 +28,10 @@ function App() {
                 <Route path="/admin/vendor/:vendorId" element={<VendorProducts />} />
                 <Route path="/vendor" element={<VendorDashboard />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/products/:id" element={<ProductView />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/vendor/add-product" element={<AddProductPage />} />
               </Route>
             </Routes>
           </BrowserRouter>

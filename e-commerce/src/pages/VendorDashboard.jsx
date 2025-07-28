@@ -1,9 +1,11 @@
 
 import { useQuery } from "@tanstack/react-query"
-import api from "../utlis/api"
+import { api } from "../utlis/api"
 import ProductCard from "../components/ProductCard"
+import { Button } from "@mui/material"
+import { Link } from "react-router-dom"
 
-const loggedInVendorId = "v2"
+const loggedInVendorId = "v1"
 
 const fetchMyProducts = async () => {
   const { data } = await api.get(`/products?vendorId=${loggedInVendorId}`)
@@ -21,10 +23,15 @@ export default function VendorDashboard() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Vendor Dashboard</h1>
+      <div className="flex justify-start mb-4">
+        <h1 className="text-2xl font-bold mb-4">Vendor Dashboard</h1>
+            <Link to="/vendor/add-product" >
+              <Button sx={{ ml: 4, bgcolor: 'amber' }}>Add New Product</Button>
+        </Link>
+      </div>
       <ul className="flex flex-wrap gap-10">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p}/>
+          <ProductCard key={p.id} product={p} />
         ))}
       </ul>
     </div>

@@ -10,9 +10,13 @@ import {
     Avatar,
     Tooltip,
     Box,
+    Badge,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+
 
 const Navbar = () => {
     const [drawerOpen, setDrawerOpen] = useState(false)
@@ -28,27 +32,30 @@ const Navbar = () => {
     }
     const sidebar = [
         { label: 'Profile', path: '/profile' },
+        { label: 'Cart', path: '/cart' },
         { label: 'Logout', path: '/' },
     ]
+    const cartCount = useSelector((state) =>
+        state.cart.items.reduce((total, item) => total + item.quantity, 0)
+    )
 
     return (
         <>
             <AppBar position="static" sx={{ backgroundColor: '#b9c6d3ff' }}>
-                <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Toolbar sx={{ display: 'flex', justifyContent: 'right',gap:2 }}>
+                    <IconButton color="inherit" onClick={() => navigate('/cart')}>
+                        <Badge badgeContent={cartCount} color="secondary">
+                            <ShoppingCartIcon />
+                        </Badge>
+                    </IconButton>
                     <IconButton
                         edge="start"
                         color="inherit"
                         aria-label="menu"
-
+                        onClick={toggleDrawer(true)}
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Box>
-                        <Tooltip title="Hi, User" arrow>
-                            <Avatar alt="User" style={{ cursor: 'pointer' }} src="/profile.jpg"
-                                onClick={toggleDrawer(true)} />
-                        </Tooltip>
-                    </Box>
                 </Toolbar>
             </AppBar>
 

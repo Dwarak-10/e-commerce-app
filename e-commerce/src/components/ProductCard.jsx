@@ -7,13 +7,18 @@ import {
   Button,
   Box
 } from '@mui/material'
+import { useDispatch } from 'react-redux'
+import { Link } from 'react-router-dom'
+import { addToCart } from '../utlis/cartSlice'
 
 const ProductCard = ({ product }) => {
+const dispatch = useDispatch()
+
   return (
-    <Card sx={{ maxWidth: 250, maxHeight:350, borderRadius: 2, boxShadow: 3 }}>
+    <Card sx={{ maxWidth: 250, maxHeight: 350, borderRadius: 2, boxShadow: 3 }}>
       <CardMedia
         component="img"
-        style={{height:100}}
+        style={{ height: 100 }}
         image={product.image}
         alt={product.title}
         sx={{ objectFit: 'contain' }}
@@ -31,8 +36,10 @@ const ProductCard = ({ product }) => {
       </CardContent>
       <CardActions>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <Button size="small">View</Button>
-          <Button size="small" variant="contained" color="primary">Buy</Button>
+          <Link to={`/products/${product.id}`}>
+            <Button variant="outlined" fullWidth>View</Button>
+          </Link>
+          <Button size="small" variant="contained" color="primary" onClick={()=> dispatch(addToCart(product))}>Add to Cart</Button>
         </Box>
       </CardActions>
     </Card>
