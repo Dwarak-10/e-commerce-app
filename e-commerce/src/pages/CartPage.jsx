@@ -1,45 +1,101 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { removeFromCart } from '../utlis/cartSlice'
 import { Card, CardMedia, CardContent, Typography, Button } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 
 const CartPage = () => {
   const cartItems = useSelector((state) => state.cart.items)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   if (cartItems.length === 0) {
     return <h2 className="text-center text-xl mt-10">Your cart is empty.</h2>
   }
 
   return (
-    <div className="p-4 grid md:grid-cols-2 gap-4">
-      {cartItems.map((item) => (
-        <Card key={item.id} className="flex">
-          <CardMedia
-            component="img"
-            image={item.image}
-            alt={item.title}
-            sx={{ width: 150 }}
-          />
-          <CardContent className="flex-1">
-            <Typography variant="h6">{item.title}</Typography>
-            <Typography variant="body2" className="my-2">
-              {item.description}
-            </Typography>
-            <Typography variant="body1" color="primary">
-              ₹ {item.price}
-            </Typography>
-            <Typography variant="body2">Qty: {item.quantity}</Typography>
-            <Button
-              variant="outlined"
-              color="error"
-              className="mt-2"
-              onClick={() => dispatch(removeFromCart(item.id))}
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">🛒 Your Cart</h1>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {cartItems.length === 0 ? (
+          <p className="text-gray-600">Your cart is empty.</p>
+        ) : (
+          cartItems.map((item) => (
+            <Card
+              key={item.id}
+              className="flex flex-col md:flex-row items-start"
+              sx={{
+                backgroundColor: '#fff',
+                borderRadius: 3,
+                boxShadow: 3,
+              }}
             >
-              Remove
-            </Button>
-          </CardContent>
-        </Card>
-      ))}
+              <CardMedia
+                component="img"
+                image={item.image}
+                alt={item.title}
+                sx={{
+                  width: 150,
+                  height: 150,
+                  objectFit: 'contain',
+                  borderRadius: '12px 0 0 12px',
+                  margin: 'auto',
+                  padding: 1,
+                }}
+              />
+
+              <CardContent className="flex-1">
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  {item.title}
+                </Typography>
+
+                <Typography variant="body2" sx={{ color: 'gray' }} className="my-1">
+                  {item.description.length > 100
+                    ? item.description.slice(0, 100) + '...'
+                    : item.description}
+                </Typography>
+
+                <div className="flex justify-between items-center mt-3">
+                  <Typography variant="h6" color="primary">
+                    ₹ {item.price}
+                  </Typography>
+
+                  <Typography variant="body2" className="text-gray-600">
+                    Qty: <span className="font-semibold">{item.quantity}</span>
+                  </Typography>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    onClick={() => dispatch(removeFromCart(item.id))}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Remove
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={() => navigate('/products/'+item.id)}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 500,
+                    }}
+                  >
+                    View
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   )
 }

@@ -7,7 +7,7 @@ import { Alert, Box, Button, Card, CardContent, Snackbar, TextField, Typography 
 const ProfileSchema = Yup.object().shape({
   firstName: Yup.string().required('First Name is required'),
   lastName: Yup.string().required('Last Name is required'),
-  photoUrl: Yup.string().url('Invalid URL'),
+  phoneNum: Yup.number().typeError('Phone Number must be a number').positive('Phone Number must be positive'),
   age: Yup.number().typeError('Age must be a number').positive('Age must be positive'),
   gender: Yup.string(),
   about: Yup.string(),
@@ -19,7 +19,7 @@ const EditProfile = ({ user }) => {
   const initialValues = {
     firstName: '',
     lastName: '',
-    photoUrl: '',
+    phoneNum: '',
     age: '',
     gender: '',
     about: '',
@@ -76,12 +76,12 @@ const EditProfile = ({ user }) => {
                   />
 
                   <TextField
-                    label="Photo URL"
-                    name="photoUrl"
-                    value={values.photoUrl}
+                    label="Phone Number"
+                    name="phoneNum"
+                    value={values.phoneNum}
                     onChange={handleChange}
-                    error={touched.photoUrl && Boolean(errors.photoUrl)}
-                    helperText={touched.photoUrl && errors.photoUrl}
+                    error={touched.phoneNum && Boolean(errors.phoneNum)}
+                    helperText={touched.phoneNum && errors.phoneNum}
                     fullWidth
                   />
 

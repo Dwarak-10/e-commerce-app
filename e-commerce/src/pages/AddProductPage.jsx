@@ -1,136 +1,150 @@
-// pages/AddProductPage.jsx
-import React from 'react'
 import { Card, CardContent, Typography, TextField, Button } from '@mui/material'
-import { useFormik } from 'formik'
+import { Field, Form, Formik, useFormik } from 'formik'
 import * as Yup from 'yup'
 import { useMutation } from '@tanstack/react-query'
-import { createProduct } from '../utlis/api'
 import { useNavigate } from 'react-router-dom'
+import api from '../utlis/api'
 
 const validationSchema = Yup.object({
   title: Yup.string().required('Required'),
   price: Yup.number().required('Required').min(1),
   description: Yup.string().required('Required'),
-  category: Yup.string().required('Required'),
   image: Yup.string().url('Invalid URL').required('Required'),
 })
 
+
+
 const AddProductPage = () => {
+  const createProduct = async (product) => {
+    try {
+      const { data } = await api.post("/products", product)
+      console.log("Product created:", data)
+      return data
+    } catch (error) {
+      console.log("Error creating product:", error)
+    }
+  }
   const navigate = useNavigate()
 
   const mutation = useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
       alert('Product added successfully')
-      navigate('/products') // or wherever you want
+      // navigate('/products')
     },
-    onError: () => {
+    onError: (err) => {
       alert('Failed to add product')
-    },
-  })
-
-  const formik = useFormik({
-    initialValues: {
-      title: '',
-      price: '',
-      description: '',
-      category: '',
-      image: '',
-    },
-    validationSchema,
-    onSubmit: (values) => {
-      const productData = {
-        ...values,
-        vendorId: 'v1', 
-        price: parseFloat(values.price),
-        rating: { rate: 0, count: 0 },
-      }
-      mutation.mutate(productData)
+      console.error("Error in AddProductPage:", err)
     },
   })
 
   return (
     <div className="flex justify-center mt-10 px-4">
-      <Card className="max-w-xl w-full shadow-lg">
+      <Card className="max-w-xl w-full" sx={{ boxShadow: 6, borderRadius: 3 }}>
         <CardContent>
-          <Typography variant="h5" className="mb-4">Add New Product</Typography>
-          <form onSubmit={formik.handleSubmit} className="space-y-4">
-            <TextField
-              fullWidth
-              id="title"
-              name="title"
-              label="Title"
-              value={formik.values.title}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.title && Boolean(formik.errors.title)}
-              helperText={formik.touched.title && formik.errors.title}
-            />
+          <Typography variant="h5" className="mb-6" sx={{ fontWeight: 600, color: '#1f2937' }}>
+            Add New Product
+          </Typography>
 
-            <TextField
-              fullWidth
-              id="price"
-              name="price"
-              label="Price"
-              type="number"
-              value={formik.values.price}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.price && Boolean(formik.errors.price)}
-              helperText={formik.touched.price && formik.errors.price}
-            />
+          <Formik
+            initialValues={{
+              title: '',
+              price: '',
+              description: '',
+              image: '',
+            }}
+            validationSchema={validationSchema}
+            onSubmit={(values, { setSubmitting }) => {
+              const productData = {
+                ...values,
+                vendorId: 'v1',
+                price: parseFloat(values.price),
+                rating: { rate: 0, count: 0 },
+              }
+              mutation.mutate(productData)
+              setSubmitting(false)
+            }}
+          >
+            {({ isSubmitting }) => (
+              <Form className="flex flex-col gap-4">
+                {/* Title */}
+                <Field name="title">
+                  {({ field, meta }) => (
+                    <TextField
+                      {...field}
+                      label="Title"
+                      fullWidth
+                      variant="outlined"
+                      error={meta.touched && Boolean(meta.error)}
+                      helperText={meta.touched && meta.error}
+                    />
+                  )}
+                </Field>
 
-            <TextField
-              fullWidth
-              id="description"
-              name="description"
-              label="Description"
-              multiline
-              rows={3}
-              value={formik.values.description}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.description && Boolean(formik.errors.description)}
-              helperText={formik.touched.description && formik.errors.description}
-            />
+                {/* Price */}
+                <Field name="price">
+                  {({ field, meta }) => (
+                    <TextField
+                      {...field}
+                      label="Price"
+                      type="number"
+                      fullWidth
+                      variant="outlined"
+                      error={meta.touched && Boolean(meta.error)}
+                      helperText={meta.touched && meta.error}
+                    />
+                  )}
+                </Field>
 
-            <TextField
-              fullWidth
-              id="category"
-              name="category"
-              label="Category"
-              value={formik.values.category}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.category && Boolean(formik.errors.category)}
-              helperText={formik.touched.category && formik.errors.category}
-            />
+                {/* Description */}
+                <Field name="description">
+                  {({ field, meta }) => (
+                    <TextField
+                      {...field}
+                      label="Description"
+                      multiline
+                      rows={3}
+                      fullWidth
+                      variant="outlined"
+                      error={meta.touched && Boolean(meta.error)}
+                      helperText={meta.touched && meta.error}
+                    />
+                  )}
+                </Field>
 
-            <TextField
-              fullWidth
-              id="image"
-              name="image"
-              label="Image URL"
-              value={formik.values.image}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.image && Boolean(formik.errors.image)}
-              helperText={formik.touched.image && formik.errors.image}
-            />
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? 'Adding...' : 'Add Product'}
-            </Button>
-          </form>
+                {/* Image */}
+                <Field name="image">
+                  {({ field, meta }) => (
+                    <TextField
+                      {...field}
+                      label="Image URL"
+                      fullWidth
+                      variant="outlined"
+                      error={meta.touched && Boolean(meta.error)}
+                      helperText={meta.touched && meta.error}
+                    />
+                  )}
+                </Field>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  sx={{ paddingY: 1.3, textTransform: 'none', fontWeight: 600 }}
+                  disabled={isSubmitting || mutation.isPending}
+                >
+                  {mutation.isPending ? 'Adding...' : 'Add Product'}
+                </Button>
+              </Form>
+            )}
+          </Formik>
         </CardContent>
       </Card>
     </div>
+
   )
 }
 

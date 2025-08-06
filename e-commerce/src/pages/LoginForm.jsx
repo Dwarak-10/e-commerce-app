@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup"
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import api from "../utlis/api";
 
 const validationSchema = (isLoginForm) => Yup.object({
     username: Yup.string().when([], {
@@ -10,19 +13,36 @@ const validationSchema = (isLoginForm) => Yup.object({
     }),
     email: Yup.string().email("Invalid email").required("Email is required"),
     password: Yup.string().min(6, "Minimum 6 characters").required("Password is required"),
-    role: Yup.string().when([], {
+    confirmPassword: Yup.string().when([], {
         is: () => isLoginForm,
         then: (schema) =>
             schema
-                .oneOf(["admin", "vendor", "customer"], "Role is required")
-                .required("Role is required"),
+                .oneOf([Yup.ref('password'), null], "Passwords must match")
+                .required("Confirm Password is required"),
         otherwise: (schema) => schema.notRequired(),
-    })
+    }),
 })
 
+const createUser = async (userData) => {
+    const { user } = await api.post("/users", userData)
+    return user
+}
+
 export default function LoginForm() {
-    const [selectedRole, setSelectedRole] = useState("");
     const [isLoginForm, setIsLoginForm] = useState(true);
+    const navigate = useNavigate()
+
+    const mutation = useMutation({
+        mutationFn: createUser,
+        onSuccess: () => {
+            alert('User created successfully')
+            navigate('/feed')
+        },
+        onError: (error) => {
+            alert('Failed to create user')
+            console.error("Error in LoginForm:", error)
+        }
+    })
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4" >
@@ -30,10 +50,16 @@ export default function LoginForm() {
                 <h2 className="text-2xl font-semibold text-center mb-6">{isLoginForm ? "Login" : "Signup"}</h2>
 
                 <Formik
-                    initialValues={{ username: "", email: "", password: "", role: "" }}
+                    initialValues={{ username: "", email: "", password: "", confirmPassword: "" }}
                     validationSchema={validationSchema(!isLoginForm)}
-                    onSubmit={(values) => {
-                        console.log("Form Data:", values);
+                    onSubmit={(values, { setSubmitting }) => {
+                        if (isLoginForm) {
+                            // Handle login
+                            console.log("Login Data:", values);
+                        } else {
+                            mutation.mutate(values);
+                        }
+                        setSubmitting(false);
                     }}
                 >
                     {({ setFieldValue }) => (
@@ -70,55 +96,15 @@ export default function LoginForm() {
                                 />
                                 <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
                             </div>
-
-                            {/* Role Selection Buttons */}
                             {!isLoginForm && <div>
-                                <label className="block font-medium mb-1">Select Role</label>
-                                <div className="flex gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSelectedRole("admin");
-                                            setFieldValue("role", "admin");
-                                        }}
-                                        className={`flex-1 p-2 border rounded-md cursor-pointer ${selectedRole === "admin"
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-gray-100 text-gray-700"
-                                            }`}
-                                    >
-                                        Admin
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSelectedRole("vendor");
-                                            setFieldValue("role", "vendor");
-                                        }}
-                                        className={`flex-1 p-2 border rounded-md cursor-pointer ${selectedRole === "vendor"
-                                            ? "bg-green-600 text-white"
-                                            : "bg-gray-100 text-gray-700"
-                                            }`}
-                                    >
-                                        Vendor
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSelectedRole("customer");
-                                            setFieldValue("role", "customer");
-                                        }}
-                                        className={`flex-1 p-2 border rounded-md cursor-pointer ${selectedRole === "customer"
-                                            ? "bg-amber-400 text-white"
-                                            : "bg-gray-100 text-gray-700"
-                                            }`}
-                                    >
-                                        Customer
-                                    </button>
-                                </div>
-                                <ErrorMessage name="role" component="div" className="text-red-500 text-sm mt-1" />
+                                <label className="block font-medium">Confirm Password</label>
+                                <Field
+                                    name="confirmPassword"
+                                    type="password"
+                                    className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                />
+                                <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-sm" />
                             </div>}
-
                             <div className="">
 
                                 {isLoginForm ? <span className="">New user?

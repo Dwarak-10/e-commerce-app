@@ -39,6 +39,13 @@
       "id": "v8",
       "name": "Selva",
       "email": "vendor2@example.com"
+    },
+    {
+      "id": "6884",
+      "name": "dwarak",
+      "email": "dwarajesh@gmail.com",
+      "phone": "9080213399",
+      "company": "amazon"
     }
   ],
   "products": [
@@ -184,6 +191,39 @@
         "rate": 0,
         "count": 0
       }
+    },
+    {
+      "id": "66cb",
+      "title": "School Bag",
+      "price": 999,
+      "description": "Testing product adding functionality",
+      "image": "https://genietravel.com/cdn/shop/files/45DegreeAngle2_a8ae371a-570d-4adc-8d96-b2be68eeb941_1200x1200_crop_center.jpg?v=1737023346",
+      "vendorId": "v1",
+      "rating": {
+        "rate": 0,
+        "count": 0
+      }
+    },
+    {
+      "id": "5094",
+      "title": "Hand Bag",
+      "price": 950,
+      "description": "testing",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTzNeLqXpkHI2YItvpH1knf99T0jQLBg3JcA&s",
+      "vendorId": "v1",
+      "rating": {
+        "rate": 0,
+        "count": 0
+      }
+    }
+  ],
+  "users": [
+    {
+      "id": "7540",
+      "username": "Dwarak",
+      "email": "dwarak@gmail.com",
+      "password": "Dwarak@123",
+      "confirmPassword": "Dwarak@123"
     }
   ]
 }

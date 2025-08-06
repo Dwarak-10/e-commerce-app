@@ -1,7 +1,7 @@
 
 import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import {api} from "../utlis/api"
+import api from "../utlis/api"
 import ProductCard from "./ProductCard"
 import { Box } from "@mui/material"
 

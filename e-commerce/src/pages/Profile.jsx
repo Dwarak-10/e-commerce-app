@@ -44,14 +44,12 @@ const Profile = () => {
       "name": "Selva",
       "email": "vendor2@example.com"
     }
-  ];  
+  ];
 
   return (
     user && (
       <div>
-        <EditProfile 
-        user={user}
-         />
+        <EditProfile user={user} />
       </div>
     )
   );

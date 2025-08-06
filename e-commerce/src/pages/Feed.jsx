@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import ProductCard from '../components/ProductCard'
 import { CircularProgress, Typography } from '@mui/material'
-import {api} from '../utlis/api'
+import api from '../utlis/api'
 
 const fetchProducts = async () => {
     const { data } = await api.get('/products')
