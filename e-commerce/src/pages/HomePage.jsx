@@ -4,11 +4,12 @@ import { CircularProgress, Typography } from '@mui/material'
 import api from '../utlis/api'
 
 const fetchProducts = async () => {
-    const { data } = await api.get('/products')
+    const { data } = await api.get('/api/product/')
+    console.log(data)
     return data
 }
 
-const ProductsPage = () => {
+const HomePage = () => {
     const { data, isLoading, isError } = useQuery({
         queryKey: ['products'],
         queryFn: fetchProducts,
@@ -43,7 +44,7 @@ const ProductsPage = () => {
                 All Products
             </Typography>
             <div className="flex flex-wrap justify-center gap-10">
-                {data.map((product) => (
+                {data?.map((product) => (
                     <ProductCard key={product.id} product={product} />
                 ))}
             </div>
@@ -51,4 +52,4 @@ const ProductsPage = () => {
     )
 }
 
-export default ProductsPage
+export default HomePage

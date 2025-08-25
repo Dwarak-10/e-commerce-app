@@ -46,48 +46,16 @@
       "email": "dwarajesh@gmail.com",
       "phone": "9080213399",
       "company": "amazon"
+    },
+    {
+      "id": "649e",
+      "name": "Ajay",
+      "email": "ajay@gmail.com",
+      "phone": "9082514452",
+      "company": "Oscar"
     }
   ],
   "products": [
-    {
-      "id": "1",
-      "vendorId": "v1",
-      "title": "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops",
-      "price": 109.95,
-      "description": "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday",
-      "category": "men's clothing",
-      "image": "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg",
-      "rating": {
-        "rate": 3.9,
-        "count": 120
-      }
-    },
-    {
-      "id": "2",
-      "vendorId": "v1",
-      "title": "Mens Casual Premium Slim Fit T-Shirts ",
-      "price": 22.3,
-      "description": "Slim-fitting style, contrast raglan long sleeve, three-button henley placket, light weight & soft fabric for breathable and comfortable wearing. And Solid stitched shirts with round neck made for durability and a great fit for casual fashion wear and diehard baseball fans. The Henley style round neckline includes a three-button placket.",
-      "category": "men's clothing",
-      "image": "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg",
-      "rating": {
-        "rate": 4.1,
-        "count": 259
-      }
-    },
-    {
-      "id": "3",
-      "vendorId": "v1",
-      "title": "Mens Cotton Jacket",
-      "price": 55.99,
-      "description": "great outerwear jackets for Spring/Autumn/Winter, suitable for many occasions, such as working, hiking, camping, mountain/rock climbing, cycling, traveling or other outdoors. Good gift choice for you or your family member. A warm hearted love to Father, husband or son in this thanksgiving or Christmas Day.",
-      "category": "men's clothing",
-      "image": "https://fakestoreapi.com/img/71li-ujtlUL._AC_UX679_.jpg",
-      "rating": {
-        "rate": 4.7,
-        "count": 500
-      }
-    },
     {
       "id": "4",
       "vendorId": "v1",
@@ -112,19 +80,6 @@
       "rating": {
         "rate": 4.6,
         "count": 400
-      }
-    },
-    {
-      "id": "6",
-      "vendorId": "v1",
-      "title": "Solid Gold Petite Micropave ",
-      "price": 168,
-      "description": "Satisfaction Guaranteed. Return or exchange any order within 30 days.Designed and sold by Hafeez Center in the United States. Satisfaction Guaranteed. Return or exchange any order within 30 days.",
-      "category": "jewelery",
-      "image": "https://fakestoreapi.com/img/61sbMiUnoGL._AC_UL640_QL65_ML3_.jpg",
-      "rating": {
-        "rate": 3.9,
-        "count": 70
       }
     },
     {
@@ -167,30 +122,11 @@
       }
     },
     {
-      "id": "10",
-      "vendorId": "v1",
-      "title": "SanDisk SSD PLUS 1TB Internal SSD - SATA III 6 Gb/s",
-      "price": 109,
-      "description": "Easy upgrade for faster boot up, shutdown, application load and response (As compared to 5400 RPM SATA 2.5” hard drive; Based on published specifications and internal benchmarking tests using PCMark vantage scores) Boosts burst write performance, making it ideal for typical PC workloads The perfect balance of performance and reliability Read/write speeds of up to 535MB/s/450MB/s (Based on internal testing; Performance may vary depending upon drive capacity, host device, OS and application.)",
-      "category": "electronics",
-      "image": "https://fakestoreapi.com/img/61U7T1koQqL._AC_SX679_.jpg",
-      "rating": {
-        "rate": 2.9,
-        "count": 470
-      }
-    },
-    {
-      "id": "69fe",
-      "title": "Cricket bat",
-      "price": 990,
+      "title": "Cricket Vicky Ball Bat",
       "description": "A cricket bat is a specialized piece of equipment used in the sport of cricket by a batter to hit the ball. It typically consists of a long, flat-fronted blade, traditionally made of willow wood, attached to a cane handle.",
-      "category": "Sport",
+      "price": 990,
       "image": "https://gmcricket.in/media/catalog/product/cache/757ea7d2b7282843694bdb6de7a23598/d/i/diamond-excalibur-english-willow-cricket-bat_9.jpg",
-      "vendorId": "v1",
-      "rating": {
-        "rate": 0,
-        "count": 0
-      }
+      "id": "69fe"
     },
     {
       "id": "66cb",
@@ -205,12 +141,60 @@
       }
     },
     {
-      "id": "5094",
-      "title": "Hand Bag",
-      "price": 950,
-      "description": "testing",
-      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTzNeLqXpkHI2YItvpH1knf99T0jQLBg3JcA&s",
+      "id": "3ce2",
+      "title": "Carrom Board",
+      "price": 599,
+      "description": "History. The game of carrom originated in India. One carrom board with its surface made of glass is still available in one of the palaces in Patiala, India.",
+      "image": "https://www.ubuy.co.nl/productimg/?image=aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvODFpUTdVSjl3REwuX0FDX1NMMTUwMF8uanBn.jpg",
       "vendorId": "v1",
+      "rating": {
+        "rate": 0,
+        "count": 0
+      }
+    },
+    {
+      "id": "2ddb",
+      "title": "Billiard",
+      "price": 30999,
+      "description": "A game in which one scores by causing a cue ball to hit in succession two object balls compare pool entry 3.",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFhkzJy9JYWdHPkvmdX1Q-q1DVwrT-yMcFqQ&s",
+      "vendorId": "v1",
+      "rating": {
+        "rate": 0,
+        "count": 0
+      }
+    },
+    {
+      "id": "ee17",
+      "title": "Watter Bottle",
+      "price": 201,
+      "description": "Insulated stainless steel water bottles are great for keeping your drinks cold for several hours, making them ideal for travel, workouts, or hot weather.",
+      "image": "https://m.media-amazon.com/images/I/51oFxEo2FyL._SX300_SY300_QL70_FMwebp_.jpg",
+      "vendorId": "v1",
+      "rating": {
+        "rate": 0,
+        "count": 0
+      }
+    },
+    {
+      "id": "1122",
+      "title": "Stainless Watter Bottle",
+      "price": 359,
+      "description": "Food-grade stainless steel drinking bottles are not only non-hazardous, but also non-toxic to your body. They do not introduce any disease-causing chemicals into the beverage you are drinking.",
+      "image": "https://m.media-amazon.com/images/I/61doFydWNQL._UF894,1000_QL80_.jpg",
+      "vendorId": "c8fd",
+      "rating": {
+        "rate": 0,
+        "count": 0
+      }
+    },
+    {
+      "id": "415e",
+      "title": "Cotton Pant",
+      "price": 550,
+      "description": "Cotton Pants - Buy Cotton Pants Online at India's Best Online Shopping Store. Check Cotton Pants Prices, Ratings & Reviews at Flipkart.com.",
+      "image": "https://ramrajcotton.in/cdn/shop/files/3_31818a63-a270-4472-b9ea-da683bf0148a.jpg?v=1741347409&width=260",
+      "vendorId": "c8fd",
       "rating": {
         "rate": 0,
         "count": 0
@@ -219,11 +203,31 @@
   ],
   "users": [
     {
-      "id": "7540",
+      "id": "2c91",
       "username": "Dwarak",
       "email": "dwarak@gmail.com",
       "password": "Dwarak@123",
-      "confirmPassword": "Dwarak@123"
+      "confirmPassword": "Dwarak@123",
+      "role": "admin",
+      "token": "xhk2lno37y"
+    },
+    {
+      "id": "c8fd",
+      "username": "Naveen",
+      "email": "naveen@gmail.com",
+      "password": "Naveen@123",
+      "confirmPassword": "Naveen@123",
+      "role": "vendor",
+      "token": "1m5kara678e"
+    },
+    {
+      "id": "7d46",
+      "username": "Praba",
+      "email": "praba@gmail.com",
+      "password": "Praba@123",
+      "confirmPassword": "Praba@123",
+      "role": "customer",
+      "token": "owoqn5qjwlq"
     }
   ]
 }

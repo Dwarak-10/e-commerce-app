@@ -4,46 +4,95 @@ import * as Yup from "yup"
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import api from "../utlis/api";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utlis/userSlice";
 
-const validationSchema = (isLoginForm) => Yup.object({
-    username: Yup.string().when([], {
-        is: () => isLoginForm,
-        then: (schema) => schema.required("Username is required"),
-        otherwise: (schema) => schema.notRequired(),
-    }),
-    email: Yup.string().email("Invalid email").required("Email is required"),
-    password: Yup.string().min(6, "Minimum 6 characters").required("Password is required"),
-    confirmPassword: Yup.string().when([], {
-        is: () => isLoginForm,
-        then: (schema) =>
-            schema
+const validationSchema = (isSignup) =>
+    Yup.object({
+        username: Yup.string().required("Username is required"),
+        email: isSignup ? Yup.string().email("Invalid email").required("Email is required") : Yup.string(),
+        password: Yup.string()
+            .min(6, "Minimum 6 characters")
+            .required("Password is required"),
+        confirmPassword: isSignup
+            ? Yup.string()
                 .oneOf([Yup.ref('password'), null], "Passwords must match")
-                .required("Confirm Password is required"),
-        otherwise: (schema) => schema.notRequired(),
-    }),
-})
+                .required("Confirm Password is required")
+            : Yup.string(),
+    });
 
 const createUser = async (userData) => {
-    const { user } = await api.post("/users", userData)
-    return user
+    const newUser = {
+        ...userData,
+    }
+    const { data } = await api.post("/api/register/", newUser)
+    return data
 }
+
+const loginUser = async (loginData) => {
+    const { data } = await api.post("/api/login/", loginData);
+    console.log("loginUser data:", data);
+    return data;
+};
 
 export default function LoginForm() {
     const [isLoginForm, setIsLoginForm] = useState(true);
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
-    const mutation = useMutation({
+    const signupMutation = useMutation({
         mutationFn: createUser,
-        onSuccess: () => {
-            alert('User created successfully')
-            navigate('/feed')
+        onSuccess: (user) => {
+            localStorage.setItem("user", JSON.stringify(user));
+            dispatch(addUser(user));
+
+            if (user.role === 'admin') {
+                navigate('/admin');
+            } else if (user.role === 'vendor') {
+                navigate('/vendor');
+            } else {
+                navigate('/home');
+            }
         },
         onError: (error) => {
-            alert('Failed to create user')
-            console.error("Error in LoginForm:", error)
+            const message = error?.message || "Something went wrong";
+            console.log(message);
         }
-    })
+    });
+    const loginMutation = useMutation({
+        mutationFn: loginUser,
+        onMutate: ({ setErrors }) => ({ setErrors }),
+        onSuccess: (data, variables, context) => {
+            if (!data || Object.keys(data).length === 0) {
+                if (context?.setErrors) {
+                    context.setErrors({ password: "Invalid email or password" });
+                }
+                return;
+            }
 
+            const user = data;
+            localStorage.setItem("user", JSON.stringify(user));
+            dispatch(addUser(user));
+            console.log("LoggedIn user:", user)
+            if (user.role === 'admin') {
+                navigate('/admin');
+            } else if (user.role === 'vendor') {
+                navigate('/vendor');
+            } else {
+                navigate('/home');
+            }
+        },
+        onError: (error, variables, context) => {
+            let message = "Something went wrong";
+            if (error.response?.status === 400) {
+                message = error?.response?.data?.Errors || "Invalid email or password";
+            }
+
+            if (context?.setErrors) {
+                context.setErrors({ password: message });
+            }
+        },
+    });
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4" >
             <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
@@ -51,32 +100,35 @@ export default function LoginForm() {
 
                 <Formik
                     initialValues={{ username: "", email: "", password: "", confirmPassword: "" }}
-                    validationSchema={validationSchema(!isLoginForm)}
-                    onSubmit={(values, { setSubmitting }) => {
+                    validationSchema={isLoginForm ? validationSchema(false) : validationSchema(true)}
+                    onSubmit={(values, { setSubmitting, setErrors }) => {
                         if (isLoginForm) {
-                            // Handle login
-                            console.log("Login Data:", values);
+                            const loginData = {
+                                username: values.username,
+                                // email: values.email,
+                                password: values.password
+                            };
+                            loginMutation.mutate({ ...loginData, setErrors }, {
+                                onSettled: () => setSubmitting(false)
+                            });
                         } else {
-                            mutation.mutate(values);
+                            signupMutation.mutate(values, { onSettled: () => setSubmitting(false) });
                         }
-                        setSubmitting(false);
                     }}
                 >
                     {({ setFieldValue }) => (
                         <Form className="space-y-4">
 
                             {/* Username */}
-                            {!isLoginForm && <div>
-                                <label className="block font-medium">Username</label>
-                                <Field
-                                    name="username"
-                                    className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                />
-                                <ErrorMessage name="username" component="div" className="text-red-500 text-sm" />
-                            </div>}
+                            <label className="block font-medium">Username</label>
+                            <Field
+                                name="username"
+                                className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+                            <ErrorMessage name="username" component="div" className="text-red-500 text-sm" />
 
                             {/* Email */}
-                            <div>
+                            {!isLoginForm && <div>
                                 <label className="block font-medium">Email</label>
                                 <Field
                                     name="email"
@@ -84,7 +136,7 @@ export default function LoginForm() {
                                     className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 />
                                 <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
-                            </div>
+                            </div>}
 
                             {/* Password */}
                             <div>
@@ -129,7 +181,7 @@ export default function LoginForm() {
                         </Form>
                     )}
                 </Formik>
-            </div>
+            </div >
         </div >
     );
 }

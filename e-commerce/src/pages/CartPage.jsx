@@ -1,13 +1,15 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { removeFromCart } from '../utlis/cartSlice'
+import { clearCart, removeFromCart } from '../utlis/cartSlice'
 import { Card, CardMedia, CardContent, Typography, Button } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+
+
 
 const CartPage = () => {
   const cartItems = useSelector((state) => state.cart.items)
   const dispatch = useDispatch()
   const navigate = useNavigate()
-
+console.log(cartItems)
   if (cartItems.length === 0) {
     return <h2 className="text-center text-xl mt-10">Your cart is empty.</h2>
   }
@@ -33,7 +35,7 @@ const CartPage = () => {
               <CardMedia
                 component="img"
                 image={item.image}
-                alt={item.title}
+                alt={item.name}
                 sx={{
                   width: 150,
                   height: 150,
@@ -46,7 +48,7 @@ const CartPage = () => {
 
               <CardContent className="flex-1">
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  {item.title}
+                  {item.name}
                 </Typography>
 
                 <Typography variant="body2" sx={{ color: 'gray' }} className="my-1">
@@ -65,36 +67,57 @@ const CartPage = () => {
                   </Typography>
                 </div>
 
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                    onClick={() => dispatch(removeFromCart(item.id))}
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 500,
-                    }}
-                  >
-                    Remove
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={() => navigate('/products/'+item.id)}
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 500,
-                    }}
-                  >
-                    View
-                  </Button>
+                <div className="mt-4 flex justify-between items-center">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => dispatch(removeFromCart(item.id))}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Remove
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={() => navigate('/products/' + item.id)}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 500,
+                      }}
+                    >
+                      View
+                    </Button>
+                  </div>
+
+
                 </div>
+
               </CardContent>
             </Card>
           ))
         )}
+      </div>
+      <div className='flex justify-end mt-5'>
+        <Button
+          variant="contained"
+          color="warning"
+          size="large"
+          onClick={() => alert("Your order is being processed", navigate("/home"), dispatch(clearCart()))
+
+          }
+          sx={{
+            textTransform: 'none',
+            fontWeight: 500,
+          }}
+        >
+          Buy Now
+        </Button>
       </div>
     </div>
   )

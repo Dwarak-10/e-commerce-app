@@ -14,6 +14,7 @@ const ProfileSchema = Yup.object().shape({
 })
 
 const EditProfile = ({ user }) => {
+  console.log(user)
   const [showToast, setShowToast] = useState(false)
 
   const initialValues = {

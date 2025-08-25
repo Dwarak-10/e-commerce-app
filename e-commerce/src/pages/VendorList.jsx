@@ -12,14 +12,16 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 
+
 const fetchVendors = async () => {
-    const { data } = await api.get('/vendors')
+    const { data } = await api.get("/api/admin/vendors/")
+    // console.log("Vendors data:", data)
     return data
 }
 
 const VendorList = () => {
-    const { data: vendors = [], isLoading, isError } = useQuery({
-        queryKey: ['vendors'],
+    const { data: vendors, isLoading: isVendorLoading, isError: isVendorError } = useQuery({
+        queryKey: ["vendors"],
         queryFn: fetchVendors,
     })
 
@@ -30,8 +32,8 @@ const VendorList = () => {
 
     // Filter logic
     useEffect(() => {
-        const filtered = vendors.filter((v) =>
-            [v.name, v.email, v.company].some((field) =>
+        const filtered = vendors?.filter((v) =>
+            [v.username, v.email, v?.company_name].some((field) =>
                 (field || "").toLowerCase().includes(searchTerm.toLowerCase())
             )
         )
@@ -42,22 +44,22 @@ const VendorList = () => {
     //  Pagination logic
     const indexOfLastVendor = currentPage * vendorsPerPage
     const indexOfFirstVendor = indexOfLastVendor - vendorsPerPage
-    const currentVendors = filteredVendors.slice(indexOfFirstVendor, indexOfLastVendor)
-    const totalPages = Math.ceil(filteredVendors.length / vendorsPerPage)
+    const currentVendors = filteredVendors?.slice(indexOfFirstVendor, indexOfLastVendor)
+    const totalPages = Math.ceil(filteredVendors?.length / vendorsPerPage)
 
     const handlePageChange = (event, value) => {
         setCurrentPage(value)
     }
 
-    if (isLoading) {
+    if (isVendorLoading) {
         return (
-            <div className="flex justify-center items-center h-40">
+            <div className="flex justify-center items-center h-screen w-screen">
                 <CircularProgress />
             </div>
         )
     }
 
-    if (isError) {
+    if (isVendorError) {
         return <div className="text-center text-red-500">Failed to fetch vendors.</div>
     }
 
@@ -76,26 +78,34 @@ const VendorList = () => {
                 sx={{ mb: 4 }}
             />
 
-            {currentVendors.length === 0 ? (
+            {currentVendors?.length === 0 ? (
                 <p className="text-gray-500">No vendors found.</p>
             ) : (
                 <div className="space-y-4">
-                    {currentVendors.map((vendor, index) => (
+                    {currentVendors?.map((vendor, index) => (
                         <Card key={vendor.id} className="shadow-sm flex  justify-between items-center p-4">
                             <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Typography variant="h6"> {((currentPage - 1) * vendorsPerPage) + index + 1 + "."}</Typography>
-                                <div className="flex flex-col gap-2">
-                                    <Typography variant="h6">Name: {vendor.name}</Typography>
-                                    <Typography variant="body2" color="textSecondary">
-                                        Email: {vendor.email}
-                                    </Typography>
-                                    <Typography variant="body2" color="textSecondary">
-                                        Phone: {vendor.phone}
-                                    </Typography>
-                                    <Typography variant="body2" color="textSecondary">
-                                        Company: {vendor.company}
-                                    </Typography>
-                                </div>
+
+                                {/* <div className="flex flex-col gap-2"> */}
+                                    <div className='flex gap-2'>
+                                        <Typography variant="h6"> {((currentPage - 1) * vendorsPerPage) + index + 1 + "."}</Typography>
+                                        <div>
+                                            <Typography variant="h6">Name: {vendor.username}</Typography>
+
+                                            <Typography variant="body2" color="textSecondary">
+                                                Email: {vendor.email}
+                                            </Typography>
+                                            <Typography variant="body2" color="textSecondary">
+                                                Phone: {vendor.phone || 'N/A'}
+                                            </Typography>
+                                            <Typography variant="body2" color="textSecondary">
+                                                Company: {vendor.company_name || 'N/A'}
+                                            </Typography>
+                                        </div>
+
+                                    </div>
+
+                                {/* </div> */}
                             </CardContent>
                             <CardActions>
                                 <Button

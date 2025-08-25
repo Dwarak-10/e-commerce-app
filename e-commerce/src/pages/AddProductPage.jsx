@@ -4,6 +4,7 @@ import * as Yup from 'yup'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import api from '../utlis/api'
+import { useSelector } from 'react-redux'
 
 const validationSchema = Yup.object({
   title: Yup.string().required('Required'),
@@ -17,7 +18,8 @@ const validationSchema = Yup.object({
 const AddProductPage = () => {
   const createProduct = async (product) => {
     try {
-      const { data } = await api.post("/products", product)
+      // const { data } = await api.post("/products", product)
+      const { data } = await api.post("/vendor/add-product", product)
       console.log("Product created:", data)
       return data
     } catch (error) {
@@ -25,6 +27,7 @@ const AddProductPage = () => {
     }
   }
   const navigate = useNavigate()
+  const vendor = useSelector(store => store?.user)
 
   const mutation = useMutation({
     mutationFn: createProduct,
@@ -57,7 +60,7 @@ const AddProductPage = () => {
             onSubmit={(values, { setSubmitting }) => {
               const productData = {
                 ...values,
-                vendorId: 'v1',
+                vendorId: vendor?.id,
                 price: parseFloat(values.price),
                 rating: { rate: 0, count: 0 },
               }

@@ -1,23 +1,51 @@
 import { useQuery } from "@tanstack/react-query"
-import  api  from "../utlis/api"
+import api from "../utlis/api"
 import DashboardCards from "../components/DashboardCards"
 import DashboardLayout from "../components/DashboardLayout"
-import { Button } from "@mui/material"
+import { Button, CircularProgress } from "@mui/material"
 import ProductStatsChart from "../components/ProductStatsChart"
 import { Link } from "react-router-dom"
+import { useSelector } from "react-redux"
+import { useState } from "react"
+
+const fetchAdminStats = async () => {
+  const { data } = await api.get("/api/admin/")
+  return data?.summary
+}
+
 const fetchVendors = async () => {
-  const { data } = await api.get("/vendors")
+  const { data } = await api.get("/api/admin/vendors/")
+  // console.log("Vendors data:", data)
+  return data
+}
+const salesAnalytics = async (type) => {
+  const { data } = await api.get(`/api/admin/sales-stats/?type=${type}`)
+  console.log("Sales Analytics data:", data)
   return data
 }
 
 export default function AdminDashboard() {
-  const { data: vendors, isLoading, isError } = useQuery({
+  const [isCategory, setIsCategory] = useState('week')
+
+  const userData = useSelector(store => store.user)
+  // console.log(userData)
+
+  const { data: vendors, isLoading: isVendorLoading, isError: isVendorError } = useQuery({
     queryKey: ["vendors"],
     queryFn: fetchVendors,
   })
+  const { data: adminStats, isLoading: isAdminLoading, isError: isAdminError } = useQuery({
+    queryKey: ["adminStats"],
+    queryFn: fetchAdminStats,
+  })
+  const { data: salesData, isLoading: isSalesLoading, isError: isSalesError } = useQuery({
+    queryKey: ["salesAnalytics", isCategory],
+    queryFn: () => salesAnalytics(isCategory),
+  })
+  // console.log("Admin Stats:", adminStats)
 
-  if (isLoading) return <p>Loading vendors...</p>
-  if (isError) return <p>Error loading vendors</p>
+  if (isVendorLoading || isAdminLoading || isSalesLoading) return <div className="flex justify-center items-center h-screen w-screen"><CircularProgress /></div>
+  if (isVendorError || isAdminError || isSalesError) return <p>Error loading data</p>
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -72,12 +100,12 @@ export default function AdminDashboard() {
 
         {/* Dashboard Cards */}
         <div className="mb-6">
-          <DashboardCards />
+          <DashboardCards stats={{ ...adminStats }} />
         </div>
 
         {/* Product Stats Chart */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <ProductStatsChart />
+          <ProductStatsChart salesData={salesData} isCategory={isCategory} setIsCategory={setIsCategory} />
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import Body from "./components/Body";
 import LoginForm from "./pages/LoginForm"
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { Provider } from "react-redux";
 import appStore from "./utlis/appStore";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -8,7 +8,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import VendorProducts from "./components/VendorProducts";
 import VendorDashboard from "./pages/VendorDashboard";
 import Profile from "./pages/Profile";
-import Feed from "./pages/Feed";
+import HomePage from "./pages/HomePage";
 import ProductView from "./pages/ProdcutView";
 import CartPage from "./pages/CartPage";
 import AddProductPage from "./pages/AddProductPage";
@@ -17,6 +17,10 @@ import VendorList from "./pages/VendorList";
 import { SnackbarProvider } from "notistack";
 import RoleGuard from "./components/RoleGaurd";
 import VendorAnalytics from "./pages/VendorAnalytics";
+import EditProduct from "./pages/EditProduct";
+import { PersistGate } from 'redux-persist/integration/react'
+import { persistor } from './utlis/appStore'
+import MyProducts from "./pages/MyProducts";
 
 function App() {
   const queryClient = new QueryClient()
@@ -24,33 +28,49 @@ function App() {
   return (
     <>
       <Provider store={appStore}>
-        <QueryClientProvider client={queryClient}>
-          <SnackbarProvider maxSnack={3} autoHideDuration={2000} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-            <BrowserRouter basename="/" >
-              <Routes>
-                <Route path="/" element={<Body />}>
-                  <Route path="/" element={<LoginForm />} />
-                  <Route path="/admin" element={
-                    // <RoleGuard allowedRoles={["admin"]}>
-                    <AdminDashboard />
-                    // </RoleGuard>
-                  } />
-                  <Route path="/admin/vendor/:vendorId" element={<VendorProducts />} />
-                  <Route path="/vendor" element={<VendorDashboard />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/feed" element={<Feed />} />
-                  <Route path="/products/:id" element={<ProductView />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/vendor/add-product" element={<AddProductPage />} />
-                  <Route path="/admin/add-vendor" element={<AddVendor />} />
-                  <Route path="/admin/vendor-list" element={<VendorList />} />
-                  <Route path="/admin/vendor/:id/analytics" element={<VendorAnalytics />} />
+        <PersistGate loading={null} persistor={persistor}>
+          <QueryClientProvider client={queryClient}>
+            <SnackbarProvider maxSnack={3} autoHideDuration={2000} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+              <BrowserRouter basename="/" >
+                <Routes>
+                  <Route path="/" element={<Body />}>
+                    <Route path="/" element={<LoginForm />} />
 
-                </Route>
-              </Routes>
-            </BrowserRouter>
-          </SnackbarProvider>
-        </QueryClientProvider>
+                    <Route path="/admin" element={
+                      <RoleGuard allowedRoles={["admin"]}>
+                        <Outlet />
+                      </RoleGuard>
+                    } >
+                      <Route index element={<AdminDashboard />} />
+                      <Route path="/admin/vendor/:vendorId" element={<VendorProducts />} />
+                      <Route path="/admin/add-vendor" element={<AddVendor />} />
+                      <Route path="/admin/vendor-list" element={<VendorList />} />
+                      <Route path="/admin/vendor/:id/analytics" element={<VendorAnalytics />} />
+                      <Route path="/admin/vendor/:vendorId" element={<VendorProducts />} />
+                    </Route>
+
+                    <Route path="/vendor" element={
+                      <RoleGuard allowedRoles={["vendor"]}>
+                        <Outlet />
+                      </RoleGuard>
+                    } >
+                      <Route index element={<VendorDashboard />} />
+                      <Route path="/vendor/add-product" element={<AddProductPage />} />
+                      <Route path="/vendor/products/:id/edit" element={<EditProduct />} />
+
+                    </Route>
+
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/products/:id" element={<ProductView />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/vendor/my-products" element={<MyProducts />} />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+            </SnackbarProvider>
+          </QueryClientProvider>
+        </PersistGate>
       </Provider>
     </>
   )

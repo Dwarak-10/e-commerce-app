@@ -12,24 +12,71 @@ import {
     Popover,
     Typography,
     Divider,
-    Button,
+    Tooltip,
+    ListItemButton
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import PeopleIcon from '@mui/icons-material/People'
+import InventorySharpIcon from '@mui/icons-material/InventorySharp';
+
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { removeUser } from '../utlis/userSlice'
+import { useMutation } from '@tanstack/react-query'
+import api from '../utlis/api'
+
+const logoutUser = async () => {
+    const data = await api.post("/api/logout/")
+    return data
+}
+
+
+
+
+const adminNotification = async () => {
+    const { data } = await api.get('/admin/notifications')
+    return data
+}
+const vendorNotification = async () => {
+    const { data } = await api.get('/vendor/notifications')
+    return data
+}
 
 const Navbar = () => {
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [notificationAnchor, setNotificationAnchor] = useState(null)
-    const role = useSelector((state) => state?.auth?.user?.role)
+    const dispatch = useDispatch()
+    const user = useSelector((store) => store?.user)
+    const role = user?.role
+    console.log("LoggedIn User from localStorage :", localStorage.getItem("user"))
+    console.log("LoggedIn User from redux :", user)
+
+    const logoutMutation = useMutation({
+        mutationFn: logoutUser,
+        onSuccess: () => {
+            navigate('/')
+        },
+        onError: (error) => {
+            console.error("Logout failed:", error)
+        }
+    })
+
 
 
     const navigate = useNavigate()
 
-    const handleNavigation = (path) => {
+    const handleNavigation = async (label, path) => {
+        if (label === "Logout") {
+            try {
+                await logoutMutation.mutateAsync()
+                localStorage.removeItem("user")
+                dispatch(removeUser())
+            } catch (error) {
+                console.error("Logout failed:", error)
+            }
+        }
         navigate(path)
     }
 
@@ -39,7 +86,6 @@ const Navbar = () => {
 
     const sidebar = [
         { label: 'Profile', path: '/profile' },
-        // { label: 'Cart', path: '/cart' },
         { label: 'Logout', path: '/' },
     ]
 
@@ -69,34 +115,56 @@ const Navbar = () => {
         <>
             <AppBar position="static" sx={{ backgroundColor: '#b9c6d3ff' }}>
                 <Toolbar sx={{ display: 'flex', justifyContent: 'right', gap: 2 }}>
-                    <IconButton color="inherit" onClick={() => navigate('/admin/vendor-list')}>
-                        <PeopleIcon />
-                    </IconButton>
+
+
+                    {role === "admin" &&
+                        <Tooltip title="Vendor List" arrow>
+                            <IconButton color="inherit" onClick={() => navigate('/admin/vendor-list')}>
+                                <PeopleIcon />
+                            </IconButton>
+                        </Tooltip>}
+
+
+                    {/* {role === "vendor" &&
+                        <Tooltip title="Products" arrow>
+                            <IconButton color="inherit" onClick={() => navigate('/vendor/products')}>
+                                <InventorySharpIcon />
+                            </IconButton>
+                        </Tooltip>} */}
+
 
                     {/* Notification Button */}
-                    <IconButton color="inherit" onClick={handleNotificationClick}>
-                        <Badge badgeContent={notifications.length} color="error">
-                            <NotificationsIcon />
-                        </Badge>
-                    </IconButton>
+                    {role !== "customer" && <Tooltip title="Notifications" arrow>
+                        <IconButton color="inherit" onClick={handleNotificationClick}>
+                            <Badge badgeContent={notifications.length} color="error">
+                                <NotificationsIcon />
+                            </Badge>
+                        </IconButton>
+                    </Tooltip>}
 
                     {/* Cart Button */}
-                    {!["admin", "vendor"].includes(role) &&
-                        <IconButton color="inherit" onClick={() => navigate('/cart')}>
-                            <Badge badgeContent={cartCount} color="secondary">
-                                <ShoppingCartIcon />
-                            </Badge>
-                        </IconButton>}
+                    <Tooltip title="Cart" arrow>
+                        {!["admin", "vendor"].includes(role) &&
+                            <IconButton color="inherit" onClick={() => navigate('/cart')}>
+                                <Badge badgeContent={cartCount} color="secondary">
+                                    <ShoppingCartIcon />
+                                </Badge>
+                            </IconButton>}
+                    </Tooltip>
+
 
                     {/* Drawer Toggle */}
-                    <IconButton
-                        edge="start"
-                        color="inherit"
-                        aria-label="menu"
-                        onClick={toggleDrawer(true)}
-                    >
-                        <MenuIcon />
-                    </IconButton>
+                    <Tooltip title="Menu" arrow>
+                        <IconButton
+                            edge="start"
+                            color="inherit"
+                            aria-label="menu"
+                            onClick={toggleDrawer(true)}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    </Tooltip>
+
                 </Toolbar>
             </AppBar>
 
@@ -127,13 +195,15 @@ const Navbar = () => {
                 >
                     <List>
                         {sidebar.map((item) => (
-                            <ListItem button key={item.label}>
+                            <ListItemButton key={item.label}>
                                 <ListItemText
                                     primary={item.label}
-                                    sx={{ cursor: 'pointer' }}
-                                    onClick={() => handleNavigation(item.path)}
+                                    sx={{
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => handleNavigation(item.label, item.path, logoutMutation)}
                                 />
-                            </ListItem>
+                            </ListItemButton>
                         ))}
                     </List>
                 </Box>

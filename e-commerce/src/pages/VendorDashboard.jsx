@@ -1,25 +1,37 @@
 
 import { useQuery } from "@tanstack/react-query"
-import  api  from "../utlis/api"
+import api from "../utlis/api"
 import ProductCard from "../components/ProductCard"
 import { Button } from "@mui/material"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import DashboardCards from "../components/DashboardCards"
+import ProductStatsChart from "../components/ProductStatsChart"
+import { useState } from "react"
 
-const loggedInVendorId = "v1"
-
-const fetchMyProducts = async () => {
-  const { data } = await api.get(`/products?vendorId=${loggedInVendorId}`)
+const fetchVendorDashboardData = async () => {
+  const { data } = await api.get('/api/vendor/dashboard/')
+  return data?.Summary
+}
+const fetchVendorSalesAnalytics = async (type) => {
+  const { data } = await api.get(`/api/admin/sales-stats/?type=${type}`)
   return data
 }
 
 export default function VendorDashboard() {
-  const { data: products, isLoading, isError } = useQuery({
-    queryKey: ["myProducts", loggedInVendorId],
-    queryFn: fetchMyProducts,
+  const [isCategory, setIsCategory] = useState('week')
+
+  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery({
+    queryKey: ['vendorDashboard'],
+    queryFn: fetchVendorDashboardData
+  })
+  const { data: salesData, isLoading: salesLoading, error: salesError } = useQuery({
+    queryKey: ['vendorSalesAnalytics', isCategory],
+    queryFn: () => fetchVendorSalesAnalytics(isCategory)
   })
 
-  if (isLoading) return <p>Loading...</p>
-  if (isError) return <p>Error loading products</p>
+  if (dashboardLoading || salesLoading) return <div>Loading...</div>
+  if (dashboardError || salesError) return <div>Error loading dashboard data</div>
+
 
   return (
     <div className="p-6">
@@ -28,6 +40,21 @@ export default function VendorDashboard() {
           📦 Vendor Dashboard
         </h1>
 
+        <Link to="/vendor/my-products">
+          <Button
+            variant="contained"
+            sx={{
+              textTransform: 'none',
+              backgroundColor: '#1976d2',
+              '&:hover': { backgroundColor: '#125ea6' },
+              borderRadius: 2,
+              paddingX: 2,
+              paddingY: 1,
+            }}
+          >
+            My Products
+          </Button>
+        </Link>
         <Link to="/vendor/add-product">
           <Button
             variant="contained"
@@ -44,11 +71,15 @@ export default function VendorDashboard() {
           </Button>
         </Link>
       </div>
-      <ul className="flex flex-wrap gap-10">
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
-      </ul>
+      {/* Dashboard Cards */}
+      <div className="mb-6">
+        <DashboardCards stats={dashboardData} />
+      </div>
+
+      {/* Product Stats Chart */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <ProductStatsChart salesData={salesData} isCategory={isCategory} setIsCategory={setIsCategory} />
+      </div>
     </div>
   )
 }

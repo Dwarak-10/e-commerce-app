@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     Card,
     CardContent,
     Typography,
     Button,
     TextField,
+    Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
@@ -20,18 +21,24 @@ const validationSchema = Yup.object({
 })
 
 const createVendor = async (vendorData) => {
-    const { data } = await api.post('/vendors', vendorData)
+    // const { data } = await api.post('/vendors', vendorData)
+    const { data } = await api.post('/api/admin/add/vendor/', vendorData)
     return data
 }
 
 const AddVendor = () => {
     const navigate = useNavigate()
+    const [open, setOpen] = useState(false);
+
+    const handleClose = () => {
+        setOpen(false);
+        navigate("/admin/vendor-list");
+    };
 
     const mutation = useMutation({
         mutationFn: createVendor,
         onSuccess: () => {
-            alert('Vendor added successfully')
-            navigate('/admin/vendors')
+            setOpen(true);
         },
         onError: () => {
             alert('Failed to add vendor')
@@ -122,6 +129,15 @@ const AddVendor = () => {
                     </form>
                 </CardContent>
             </Card>
+            <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>Success</DialogTitle>
+                <DialogContent>
+                    Vendor added successfully
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose} variant="contained">OK</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     )
 }
