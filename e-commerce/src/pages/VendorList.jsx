@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react'
 
 const fetchVendors = async () => {
     const { data } = await api.get("/api/admin/vendors/")
-    // console.log("Vendors data:", data)
+    console.log("Vendors data:", data)
     return data
 }
 
@@ -87,23 +87,23 @@ const VendorList = () => {
                             <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
 
                                 {/* <div className="flex flex-col gap-2"> */}
-                                    <div className='flex gap-2'>
-                                        <Typography variant="h6"> {((currentPage - 1) * vendorsPerPage) + index + 1 + "."}</Typography>
-                                        <div>
-                                            <Typography variant="h6">Name: {vendor.username}</Typography>
+                                <div className='flex gap-2'>
+                                    <Typography variant="h6"> {((currentPage - 1) * vendorsPerPage) + index + 1 + "."}</Typography>
+                                    <div>
+                                        <Typography variant="h6">Name: {vendor.username}</Typography>
 
-                                            <Typography variant="body2" color="textSecondary">
-                                                Email: {vendor.email}
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Phone: {vendor.phone || 'N/A'}
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Company: {vendor.company_name || 'N/A'}
-                                            </Typography>
-                                        </div>
-
+                                        <Typography variant="body2" color="textSecondary">
+                                            Email: {vendor.email}
+                                        </Typography>
+                                        <Typography variant="body2" color="textSecondary">
+                                            Phone: {vendor.phone || 'N/A'}
+                                        </Typography>
+                                        <Typography variant="body2" color="textSecondary">
+                                            Company: {vendor.company_name || vendor.company || 'N/A'}
+                                        </Typography>
                                     </div>
+
+                                </div>
 
                                 {/* </div> */}
                             </CardContent>

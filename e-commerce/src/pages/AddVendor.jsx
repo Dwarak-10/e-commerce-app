@@ -14,10 +14,11 @@ import api from '../utlis/api'
 import { useNavigate } from 'react-router-dom'
 
 const validationSchema = Yup.object({
-    name: Yup.string().required('Name is required'),
+    username: Yup.string().required('Name is required'),
     email: Yup.string().email('Invalid email').required('Email is required'),
+    password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
     phone: Yup.string().required('Phone number is required'),
-    company: Yup.string().required('Company name is required'),
+    company_name: Yup.string().required('Company name is required'),
 })
 
 const createVendor = async (vendorData) => {
@@ -29,31 +30,40 @@ const createVendor = async (vendorData) => {
 const AddVendor = () => {
     const navigate = useNavigate()
     const [open, setOpen] = useState(false);
+    const [dialogTitle, setDialogTitle] = useState('');
+    const [dialogMessage, setDialogMessage] = useState('');
 
     const handleClose = () => {
         setOpen(false);
-        navigate("/admin/vendor-list");
+        dialogTitle === 'Error' ? navigate('/admin/add-vendor') :
+            navigate("/admin/vendor-list");
     };
 
     const mutation = useMutation({
         mutationFn: createVendor,
         onSuccess: () => {
             setOpen(true);
+            setDialogTitle('Success');
+            setDialogMessage('Vendor added successfully');
         },
         onError: () => {
-            alert('Failed to add vendor')
+            setOpen(true);
+            setDialogTitle('Error');
+            setDialogMessage('Failed to add vendor');
         },
     })
 
     const formik = useFormik({
         initialValues: {
-            name: '',
+            username: '',
             email: '',
+            password: '',
             phone: '',
-            company: '',
+            company_name: '',
         },
         validationSchema,
         onSubmit: (values) => {
+            console.log(values)
             mutation.mutate(values)
         },
     })
@@ -69,14 +79,14 @@ const AddVendor = () => {
                     <form onSubmit={formik.handleSubmit} className="flex flex-col gap-5 mt-6">
                         <TextField
                             fullWidth
-                            label="Name"
-                            name="name"
+                            label="Username"
+                            name="username"
                             variant="outlined"
-                            value={formik.values.name}
+                            value={formik.values.username}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
-                            error={formik.touched.name && Boolean(formik.errors.name)}
-                            helperText={formik.touched.name && formik.errors.name}
+                            error={formik.touched.username && Boolean(formik.errors.username)}
+                            helperText={formik.touched.username && formik.errors.username}
                         />
 
                         <TextField
@@ -94,6 +104,19 @@ const AddVendor = () => {
 
                         <TextField
                             fullWidth
+                            label="Password"
+                            name="password"
+                            type="password"
+                            variant="outlined"
+                            value={formik.values.password}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.touched.password && Boolean(formik.errors.password)}
+                            helperText={formik.touched.password && formik.errors.password}
+                        />
+
+                        <TextField
+                            fullWidth
                             label="Phone"
                             name="phone"
                             variant="outlined"
@@ -107,13 +130,13 @@ const AddVendor = () => {
                         <TextField
                             fullWidth
                             label="Company"
-                            name="company"
+                            name="company_name"
                             variant="outlined"
-                            value={formik.values.company}
+                            value={formik.values.company_name}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
-                            error={formik.touched.company && Boolean(formik.errors.company)}
-                            helperText={formik.touched.company && formik.errors.company}
+                            error={formik.touched.company_name && Boolean(formik.errors.company_name)}
+                            helperText={formik.touched.company_name && formik.errors.company_name}
                         />
 
                         <Button
@@ -130,9 +153,9 @@ const AddVendor = () => {
                 </CardContent>
             </Card>
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Success</DialogTitle>
+                <DialogTitle sx={{ color: dialogTitle === 'Error' ? 'red' : 'green' }}>{dialogTitle}</DialogTitle>
                 <DialogContent>
-                    Vendor added successfully
+                    {dialogMessage}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} variant="contained">OK</Button>

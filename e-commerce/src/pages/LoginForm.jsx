@@ -6,6 +6,8 @@ import { useMutation } from "@tanstack/react-query";
 import api from "../utlis/api";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utlis/userSlice";
+import { isPending } from "@reduxjs/toolkit";
+import { Button } from "@mui/material";
 
 const validationSchema = (isSignup) =>
     Yup.object({
@@ -26,12 +28,13 @@ const createUser = async (userData) => {
         ...userData,
     }
     const { data } = await api.post("/api/register/", newUser)
+    // console.log("SigningUser data:", data)
     return data
 }
 
 const loginUser = async (loginData) => {
     const { data } = await api.post("/api/login/", loginData);
-    console.log("loginUser data:", data);
+    // console.log("loginUser data:", data);
     return data;
 };
 
@@ -42,7 +45,8 @@ export default function LoginForm() {
 
     const signupMutation = useMutation({
         mutationFn: createUser,
-        onSuccess: (user) => {
+        onMutate: ({ setErrors }) => ({ setErrors }),
+        onSuccess: (user, variables, context) => {
             localStorage.setItem("user", JSON.stringify(user));
             dispatch(addUser(user));
 
@@ -55,7 +59,7 @@ export default function LoginForm() {
             }
         },
         onError: (error) => {
-            const message = error?.message || "Something went wrong";
+            const message = error || "Something went wrong";
             console.log(message);
         }
     });
@@ -73,7 +77,7 @@ export default function LoginForm() {
             const user = data;
             localStorage.setItem("user", JSON.stringify(user));
             dispatch(addUser(user));
-            console.log("LoggedIn user:", user)
+            // console.log("LoggedIn user:", user)
             if (user.role === 'admin') {
                 navigate('/admin');
             } else if (user.role === 'vendor') {
@@ -102,6 +106,7 @@ export default function LoginForm() {
                     initialValues={{ username: "", email: "", password: "", confirmPassword: "" }}
                     validationSchema={isLoginForm ? validationSchema(false) : validationSchema(true)}
                     onSubmit={(values, { setSubmitting, setErrors }) => {
+                        setSubmitting(true);
                         if (isLoginForm) {
                             const loginData = {
                                 username: values.username,
@@ -110,13 +115,13 @@ export default function LoginForm() {
                             };
                             loginMutation.mutate({ ...loginData, setErrors }, {
                                 onSettled: () => setSubmitting(false)
-                            });
+                            }, isPending);
                         } else {
                             signupMutation.mutate(values, { onSettled: () => setSubmitting(false) });
                         }
                     }}
                 >
-                    {({ setFieldValue }) => (
+                    {({ setFieldValue, isSubmitting }) => (
                         <Form className="space-y-4">
 
                             {/* Username */}
@@ -172,9 +177,10 @@ export default function LoginForm() {
                             <div>
                                 <button
                                     type="submit"
+                                    disabled={isSubmitting || loginMutation.isLoading || signupMutation.isLoading}
                                     className="w-full bg-black text-white p-2 rounded-md hover:bg-gray-800 transition cursor-pointer"
                                 >
-                                    Submit
+                                    {isSubmitting ? 'Submitting...' : 'Submit'}
                                 </button>
                             </div>
 

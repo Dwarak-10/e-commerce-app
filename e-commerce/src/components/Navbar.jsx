@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     AppBar,
     Toolbar,
@@ -13,34 +13,42 @@ import {
     Typography,
     Divider,
     Tooltip,
-    ListItemButton
+    ListItemButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    Button,
+    DialogActions
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import PeopleIcon from '@mui/icons-material/People'
-import InventorySharpIcon from '@mui/icons-material/InventorySharp';
 
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { removeUser } from '../utlis/userSlice'
-import { useMutation } from '@tanstack/react-query'
+import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '../utlis/api'
+import moment from 'moment';
+import { addNotification, markAllRead, markNotificationRead } from '../utlis/notificationSlice'
+
+
 
 const logoutUser = async () => {
     const data = await api.post("/api/logout/")
     return data
 }
 
-
-
-
 const adminNotification = async () => {
-    const { data } = await api.get('/admin/notifications')
+    const { data } = await api.get('/api/notifications/')
+    // console.log(data)
     return data
 }
+
 const vendorNotification = async () => {
-    const { data } = await api.get('/vendor/notifications')
+    const { data } = await api.get('/api/notifications/')
+    // console.log(data)
     return data
 }
 
@@ -49,36 +57,59 @@ const Navbar = () => {
     const [notificationAnchor, setNotificationAnchor] = useState(null)
     const dispatch = useDispatch()
     const user = useSelector((store) => store?.user)
+    const notificationsRedux = useSelector((store) => store?.notification)
     const role = user?.role
-    console.log("LoggedIn User from localStorage :", localStorage.getItem("user"))
-    console.log("LoggedIn User from redux :", user)
+    const [openDialog, setOpenDialog] = useState(false);
+    const [dialogMessage, setDialogMessage] = useState('');
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    // console.log("LoggedIn User from localStorage :", localStorage.getItem("user"))
+    // console.log("LoggedIn User from redux :", user)
+    const { data: adminNotifications } = useQuery({
+        queryKey: ['adminNotifications'],
+        queryFn: adminNotification,
+    })
+    const { data: vendorNotifications } = useQuery({
+        queryKey: ['vendorNotifications'],
+        queryFn: vendorNotification,
+    })
+
+    const notifications = role === "admin" ? adminNotifications : vendorNotifications
+
+    // useEffect(() => {
+    //     dispatch(addNotification(notifications))
+    // }, [ notifications])
+    // console.log("notificationsRedux:", notificationsRedux)
 
     const logoutMutation = useMutation({
         mutationFn: logoutUser,
         onSuccess: () => {
-            navigate('/')
+            navigate('/login')
         },
         onError: (error) => {
-            console.error("Logout failed:", error)
+            console.error("Logout failed:", error);
+            setDialogMessage("Logout failed. Please try again.");
+            setOpenDialog(true);
         }
     })
-
-
 
     const navigate = useNavigate()
 
     const handleNavigation = async (label, path) => {
         if (label === "Logout") {
             try {
-                await logoutMutation.mutateAsync()
-                localStorage.removeItem("user")
-                dispatch(removeUser())
+                setIsLoggingOut(true);
+                await logoutMutation.mutateAsync();
+                localStorage.removeItem("user");
+                dispatch(removeUser());
             } catch (error) {
-                console.error("Logout failed:", error)
+                console.error("Logout failed:", error);
+            } finally {
+                setIsLoggingOut(false);
             }
         }
-        navigate(path)
-    }
+        navigate(path);
+    };
 
     const toggleDrawer = (open) => () => {
         setDrawerOpen(open)
@@ -86,19 +117,16 @@ const Navbar = () => {
 
     const sidebar = [
         { label: 'Profile', path: '/profile' },
-        { label: 'Logout', path: '/' },
+        { label: 'Logout', path: '/login' },
     ]
 
-    const cartCount = useSelector((state) =>
-        state.cart.items.reduce((total, item) => total + item.quantity, 0)
-    )
 
-    // Dummy Notifications Data
-    const notifications = [
-        'Order #1234 has been shipped',
-        'Your profile was updated successfully',
-        'New product added to your wishlist',
-    ]
+    const cartLength = useSelector((state) => state.cart?.items || [])
+    const totalQuantity = cartLength.reduce((sum, item) => sum + item.quantity, 0);
+
+
+
+
 
     const handleNotificationClick = (event) => {
         setNotificationAnchor(event.currentTarget)
@@ -110,6 +138,12 @@ const Navbar = () => {
 
     const open = Boolean(notificationAnchor)
     const id = open ? 'notification-popover' : undefined
+
+    const handleReadNotificationClick = (notificationId) => {
+        console.log("Cicked")
+        setNotification(notification.filter(note => note.id !== notificationId));
+        // dispatch(markNotificationRead(notificationId));
+    };
 
     return (
         <>
@@ -125,18 +159,10 @@ const Navbar = () => {
                         </Tooltip>}
 
 
-                    {/* {role === "vendor" &&
-                        <Tooltip title="Products" arrow>
-                            <IconButton color="inherit" onClick={() => navigate('/vendor/products')}>
-                                <InventorySharpIcon />
-                            </IconButton>
-                        </Tooltip>} */}
-
-
                     {/* Notification Button */}
                     {role !== "customer" && <Tooltip title="Notifications" arrow>
                         <IconButton color="inherit" onClick={handleNotificationClick}>
-                            <Badge badgeContent={notifications.length} color="error">
+                            <Badge badgeContent={notifications?.length || 0} color="error">
                                 <NotificationsIcon />
                             </Badge>
                         </IconButton>
@@ -146,7 +172,7 @@ const Navbar = () => {
                     <Tooltip title="Cart" arrow>
                         {!["admin", "vendor"].includes(role) &&
                             <IconButton color="inherit" onClick={() => navigate('/cart')}>
-                                <Badge badgeContent={cartCount} color="secondary">
+                                <Badge badgeContent={totalQuantity} color="secondary">
                                     <ShoppingCartIcon />
                                 </Badge>
                             </IconButton>}
@@ -195,17 +221,23 @@ const Navbar = () => {
                 >
                     <List>
                         {sidebar.map((item) => (
-                            <ListItemButton key={item.label}>
+                            <ListItemButton
+                                key={item.label}
+                                disabled={isLoggingOut}
+                                onClick={() => handleNavigation(item.label, item.path, logoutMutation)}
+                                sx={{ cursor: isLoggingOut ? 'not-allowed' : 'pointer' }}
+                            >
                                 <ListItemText
                                     primary={item.label}
                                     sx={{
-                                        cursor: 'pointer'
+                                        cursor: isLoggingOut ? 'not-allowed' : 'pointer',
+                                        color: isLoggingOut ? 'text.disabled' : 'inherit',
                                     }}
-                                    onClick={() => handleNavigation(item.label, item.path, logoutMutation)}
                                 />
                             </ListItemButton>
                         ))}
                     </List>
+
                 </Box>
             </Drawer>
 
@@ -226,27 +258,40 @@ const Navbar = () => {
                 sx={{ mt: 1 }}
             >
                 <Box sx={{ p: 2, minWidth: 250 }}>
-                    <Typography variant="subtitle1" gutterBottom>
-                        Notifications
-                    </Typography>
+                    <Typography variant="subtitle1" gutterBottom>Notifications</Typography>
                     <Divider sx={{ mb: 1 }} />
-                    {notifications.length === 0 ? (
+                    {(!notifications || notifications.length === 0) ? (
                         <Typography variant="body2" color="textSecondary">
                             No new notifications
                         </Typography>
                     ) : (
-                        notifications.map((note, index) => (
-                            <Typography
-                                key={index}
-                                variant="body2"
-                                sx={{ mb: 1, wordWrap: 'break-word' }}
-                            >
-                                • {note}
-                            </Typography>
-                        ))
+                        notifications
+                            .filter(note => note.is_read)
+                            .map((note, index) => (
+                                <Typography
+                                    key={note.id || index}
+                                    variant="body2"
+                                    sx={{ mb: 1, wordWrap: 'break-word', cursor: 'pointer' }}
+                                    onClick={() => handleReadNotificationClick(note.id)}                                >
+                                    • {note.message} {' '}
+                                    <Box component="span" sx={{ fontSize: 11, color: 'gray', fontStyle: 'italic' }}>
+                                        ({moment(note.timestamp).fromNow()})
+                                    </Box>
+                                </Typography>
+                            ))
                     )}
                 </Box>
             </Popover>
+            <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                <DialogTitle>Error</DialogTitle>
+                <DialogContent>
+                    <Typography>{dialogMessage}</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDialog(false)} color="primary">Close</Button>
+                </DialogActions>
+            </Dialog>
+
         </>
     )
 }

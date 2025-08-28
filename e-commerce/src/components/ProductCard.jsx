@@ -5,9 +5,13 @@ import {
 } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { addToCart } from '../utlis/cartSlice'
 import api from '../utlis/api'
 import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { useAddToCart } from '../utlis/service'
+import { addToCart } from '../utlis/cartSlice'
+
+
 
 const ProductCard = ({ product, onDelete }) => {
   // console.log(product)
@@ -16,6 +20,8 @@ const ProductCard = ({ product, onDelete }) => {
   const { pathname } = useLocation()
   const userData = useSelector((state) => state.user)
   const [openDialog, setOpenDialog] = useState(false)
+  const addToCartMutation = useAddToCart();
+
   const [snackbar, setSnackbar] = useState({ open: false, message: '' })
 
   const handleDelete = async () => {
@@ -32,6 +38,18 @@ const ProductCard = ({ product, onDelete }) => {
   if (!product || Object.keys(product).length === 0) {
     return <div className="text-center text-red-500 mt-10">Product not found.</div>
   }
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(product))
+    addToCartMutation.mutate(product.id, {
+      onSuccess: () => {
+        setSnackbar({ open: true, message: 'Product added to cart' });
+      },
+      onError: () => {
+        setSnackbar({ open: true, message: 'Failed to add product to cart' });
+      },
+    });
+  };
 
   return (
     <>
@@ -91,9 +109,10 @@ const ProductCard = ({ product, onDelete }) => {
                   variant="contained"
                   color="primary"
                   size='medium'
-                  onClick={() => dispatch(addToCart(product))}
+                  onClick={handleAddToCart}
+                  disabled={addToCartMutation.isPending}
                 >
-                  Add to Cart
+                  {addToCartMutation.isPending ? "Adding..." : "Add to Cart"}
                 </Button>}
             </Box>
           )}

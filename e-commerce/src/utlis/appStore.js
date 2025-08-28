@@ -3,11 +3,13 @@ import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, 
 import storage from 'redux-persist/lib/storage'
 import userReducer from './userSlice'
 import cartReducer from './cartSlice'
+import notificationReducer from './notificationSlice'
 
 
 const rootReducer = combineReducers({
   user: userReducer,
-  cart: cartReducer
+  cart: cartReducer,
+  notification: notificationReducer,
 })
 
 const persistConfig = {

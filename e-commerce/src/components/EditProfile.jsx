@@ -5,8 +5,7 @@ import { Alert, Box, Button, Card, CardContent, Snackbar, TextField, Typography 
 
 
 const ProfileSchema = Yup.object().shape({
-  firstName: Yup.string().required('First Name is required'),
-  lastName: Yup.string().required('Last Name is required'),
+  name: Yup.string().required('Name is required'),
   phoneNum: Yup.number().typeError('Phone Number must be a number').positive('Phone Number must be positive'),
   age: Yup.number().typeError('Age must be a number').positive('Age must be positive'),
   gender: Yup.string(),
@@ -18,8 +17,7 @@ const EditProfile = ({ user }) => {
   const [showToast, setShowToast] = useState(false)
 
   const initialValues = {
-    firstName: '',
-    lastName: '',
+    name: '',
     phoneNum: '',
     age: '',
     gender: '',
@@ -56,23 +54,14 @@ const EditProfile = ({ user }) => {
             {({ errors, touched, handleChange, values }) => (
               <Form>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <TextField
-                    label="First Name"
-                    name="firstName"
-                    value={values.firstName}
-                    onChange={handleChange}
-                    error={touched.firstName && Boolean(errors.firstName)}
-                    helperText={touched.firstName && errors.firstName}
-                    fullWidth
-                  />
 
                   <TextField
-                    label="Last Name"
-                    name="lastName"
-                    value={values.lastName}
+                    label="Name"
+                    name="name"
+                    value={values.name}
                     onChange={handleChange}
-                    error={touched.lastName && Boolean(errors.lastName)}
-                    helperText={touched.lastName && errors.lastName}
+                    error={touched.name && Boolean(errors.name)}
+                    helperText={touched.name && errors.name}
                     fullWidth
                   />
 

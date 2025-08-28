@@ -1,15 +1,17 @@
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import api from '../utlis/api'
-import { CircularProgress, Card, CardContent, Typography, CardMedia, Button } from '@mui/material'
+import { CircularProgress, Card, CardContent, Typography, CardMedia, Button, Snackbar, Box } from '@mui/material'
 import { addToCart } from '../utlis/cartSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import { useAddToCart } from '../utlis/service';
+import { useState } from 'react'
 
 const fetchProductById = async (id) => {
     try {
         const { data } = await api.get(`/api/vendor/products/${id}/`)
-        console.log("Product data:", data)
+        // console.log("Product data:", data)
         return data
     } catch (error) {
         throw new Error('Error fetching product')
@@ -19,12 +21,26 @@ const fetchProductById = async (id) => {
 const ProductView = () => {
     const { id } = useParams()
     const role = useSelector(store => store?.user?.role)
+    const [snackbar, setSnackbar] = useState({ open: false, message: '' })
+    const dispatch = useDispatch()
+
     const { data: product, isLoading, isError } = useQuery({
         queryKey: ['product', id],
         queryFn: () => fetchProductById(id),
     })
+    const addToCartMutation = useAddToCart();
 
-    const dispatch = useDispatch()
+    const handleAddToCart = async () => {
+        try {
+            dispatch(addToCart(product));
+            await addToCartMutation.mutateAsync(product.id);
+            setSnackbar({ open: true, message: 'Product added to cart' });
+        } catch {
+            setSnackbar({ open: true, message: 'Failed to add product to cart' });
+        }
+    };
+
+
 
     if (isLoading) {
         return (
@@ -38,15 +54,35 @@ const ProductView = () => {
         return <div className="text-center text-red-500 mt-10">Product not found.</div>
     }
 
-    const unitsSold = product.total_quantity_sold || 0
-    const revenue = product.total_revenue || 0
-
-    const chartData = [
-        { name: 'Units Sold', value: unitsSold },
-        { name: 'Revenue', value: revenue }
-    ];
+    const totalSales = product.total_quantity_sold || 0
+    const totalRevenue = product.total_revenue || 0
 
     const COLORS = ['#1976d2', '#43a047']
+
+    const chartData = [
+        { name: 'Sold Quantity', sold: Number(product.total_quantity_sold) || 0, revenue: 0 },
+        { name: 'Revenue', revenue: Number(product.total_revenue) || 0, sold: 0 },
+    ];
+
+    const CustomTooltip = ({ active, payload }) => {
+        if (!active || !payload || payload.length === 0) return null;
+        const barData = payload.find(entry => entry.value !== 0);
+
+        if (!barData) return null;
+
+        return (
+            <div style={{ backgroundColor: '#fff', padding: 10, border: '1px solid #ccc' }}>
+                <p style={{ margin: 0, color: barData.color, fontWeight: 'bold' }}>
+                    {barData.name}: {' '}
+                    {barData.name === 'Revenue'
+                        ? `₹ ${barData.value.toLocaleString()}`
+                        : barData.value}
+                </p>
+            </div>
+        );
+    };
+
+
 
     return (
         <div className="flex justify-around items-center px-4 py-8 bg-gray-100 min-h-screen">
@@ -103,15 +139,11 @@ const ProductView = () => {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                sx={{
-                                    textTransform: 'none',
-                                    px: 3,
-                                    py: 1,
-                                    borderRadius: '8px',
-                                }}
-                                onClick={() => dispatch(addToCart(product))}
+                                sx={{ textTransform: 'none', px: 3, py: 1, borderRadius: '8px' }}
+                                onClick={handleAddToCart}
+                                disabled={addToCartMutation.isPending}
                             >
-                                Add to Cart
+                                {addToCartMutation.isPending ? "Adding..." : "Add to Cart"}
                             </Button>}
                     </div>
                 </CardContent>
@@ -132,30 +164,37 @@ const ProductView = () => {
                         Sales & Revenue Breakdown
                     </Typography>
 
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={chartData}>
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip
-                                formatter={(value, name) =>
-                                    name === 'Revenue'
-                                        ? `₹ ${value.toLocaleString()}`
-                                        : value
-                                }
-                            />
-                            <Legend />
-                            <Bar dataKey="value">
-                                {chartData.map((entry, index) => (
-                                    <Cell
-                                        key={`cell-${index}`}
-                                        fill={COLORS[index % COLORS.length]}
-                                    />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <Box>
+
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Legend />
+                                <Bar dataKey="sold" name="Sold Quantity" fill="#1976d2" />
+                                <Bar dataKey="revenue" name="Revenue" fill="#43a047" />
+                            </BarChart>
+
+                        </ResponsiveContainer>
+                        <div>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                                Total Sales: {totalSales.toLocaleString()}
+                            </Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                                Total Revenue: ₹{totalRevenue.toLocaleString()}
+                            </Typography>
+                        </div>
+
+                    </Box>
 
                 </Card>}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={5000}
+                onClose={() => setSnackbar({ open: false, message: '' })}
+                message={snackbar.message}
+            />
         </div>
     )
 }

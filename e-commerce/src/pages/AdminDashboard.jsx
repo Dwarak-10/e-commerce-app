@@ -7,21 +7,40 @@ import ProductStatsChart from "../components/ProductStatsChart"
 import { Link } from "react-router-dom"
 import { useSelector } from "react-redux"
 import { useState } from "react"
+import ErrorFallback from "../components/ErrorFallBack"
 
 const fetchAdminStats = async () => {
-  const { data } = await api.get("/api/admin/")
-  return data?.summary
+  try {
+    const { data } = await api.get("/api/admin/")
+    return data?.summary
+  } catch (error) {
+    console.error("Error fetching admin stats:", error)
+    throw error
+  }
 }
 
 const fetchVendors = async () => {
-  const { data } = await api.get("/api/admin/vendors/")
-  // console.log("Vendors data:", data)
-  return data
+  try {
+    const { data } = await api.get("/api/admin/vendors/")
+    // console.log("Vendors data:", data)
+
+    return data
+  } catch (error) {
+    console.error("Error fetching vendors:", error)
+    throw error
+  }
 }
+
 const salesAnalytics = async (type) => {
-  const { data } = await api.get(`/api/admin/sales-stats/?type=${type}`)
-  console.log("Sales Analytics data:", data)
-  return data
+  try {
+    const { data } = await api.get(`/api/admin/sales-stats/?type=${type}`)
+    // console.log("Sales Analytics data:", data)
+
+    return data
+  } catch (error) {
+    console.error("Error fetching sales analytics:", error)
+    throw error
+  }
 }
 
 export default function AdminDashboard() {
@@ -43,9 +62,20 @@ export default function AdminDashboard() {
     queryFn: () => salesAnalytics(isCategory),
   })
   // console.log("Admin Stats:", adminStats)
+  const handleRetry = () => {
+    if (isVendorError) {
+      fetchVendors()
+    }
+    if (isAdminError) {
+      fetchAdminStats()
+    }
+    if (isSalesError) {
+      salesAnalytics(isCategory)
+    }
+  }
 
   if (isVendorLoading || isAdminLoading || isSalesLoading) return <div className="flex justify-center items-center h-screen w-screen"><CircularProgress /></div>
-  if (isVendorError || isAdminError || isSalesError) return <p>Error loading data</p>
+  if (isVendorError || isAdminError || isSalesError) return <ErrorFallback onRetry={handleRetry} />
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -57,21 +87,7 @@ export default function AdminDashboard() {
             <p className="text-gray-600">Manage vendors and monitor product performance</p>
           </div>
 
-          <Link to="/admin/vendor-list">
-            <Button
-              variant="contained"
-              sx={{
-                textTransform: 'none',
-                backgroundColor: '#1976d2',
-                '&:hover': { backgroundColor: '#125ea6' },
-                borderRadius: 2,
-                paddingX: 2,
-                paddingY: 1,
-              }}
-            >
-              View All Vendors
-            </Button>
-          </Link>
+
 
           <Link to="/admin/add-vendor">
             <Button
@@ -92,10 +108,56 @@ export default function AdminDashboard() {
 
 
         {/* Vendor Overview */}
-        <div className="mb-6 bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Vendors Overview</h2>
-          <p className="mb-4 text-gray-700">Total Vendors: <span className="font-bold">{vendors.length}</span></p>
-
+        <div className="flex justify-between items-center mb-6 bg-white p-6 rounded-lg shadow">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Vendors Overview</h2>
+            <p className="mb-4 text-gray-700">Total Vendors: <span className="font-bold">{vendors.length}</span></p>
+          </div>
+          <Link to="/admin/vendor-list">
+            <Button
+              variant="contained"
+              sx={{
+                textTransform: 'none',
+                backgroundColor: '#1976d2',
+                '&:hover': { backgroundColor: '#125ea6' },
+                borderRadius: 2,
+                paddingX: 2,
+                paddingY: 1,
+              }}
+            >
+              View All Vendors
+            </Button>
+          </Link>
+          <Link to="/admin/my-orders">
+            <Button
+              variant="contained"
+              sx={{
+                textTransform: 'none',
+                backgroundColor: '#1976d2',
+                '&:hover': { backgroundColor: '#125ea6' },
+                borderRadius: 2,
+                paddingX: 2,
+                paddingY: 1,
+              }}
+            >
+              Orders
+            </Button>
+          </Link>
+          <Link to="/admin/my-customers">
+            <Button
+              variant="contained"
+              sx={{
+                textTransform: 'none',
+                backgroundColor: '#1976d2',
+                '&:hover': { backgroundColor: '#125ea6' },
+                borderRadius: 2,
+                paddingX: 2,
+                paddingY: 1,
+              }}
+            >
+              View All Users
+            </Button>
+          </Link>
         </div>
 
         {/* Dashboard Cards */}

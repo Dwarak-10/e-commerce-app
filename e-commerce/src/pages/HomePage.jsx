@@ -5,7 +5,7 @@ import api from '../utlis/api'
 
 const fetchProducts = async () => {
     const { data } = await api.get('/api/product/')
-    console.log(data)
+    // console.log(data)
     return data
 }
 

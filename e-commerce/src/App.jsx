@@ -21,6 +21,10 @@ import EditProduct from "./pages/EditProduct";
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from './utlis/appStore'
 import MyProducts from "./pages/MyProducts";
+import RoleRedirect from "./components/RoleRedirect";
+import VendorOrders from "./pages/VendorOrders";
+import AdminOrders from "./pages/AdminOrders";
+import AdminUsers from "./pages/AdminUsers";
 
 function App() {
   const queryClient = new QueryClient()
@@ -34,7 +38,8 @@ function App() {
               <BrowserRouter basename="/" >
                 <Routes>
                   <Route path="/" element={<Body />}>
-                    <Route path="/" element={<LoginForm />} />
+                    <Route path="/" element={<RoleRedirect />} />
+                    <Route path="/login" element={<LoginForm />} />
 
                     <Route path="/admin" element={
                       <RoleGuard allowedRoles={["admin"]}>
@@ -47,6 +52,9 @@ function App() {
                       <Route path="/admin/vendor-list" element={<VendorList />} />
                       <Route path="/admin/vendor/:id/analytics" element={<VendorAnalytics />} />
                       <Route path="/admin/vendor/:vendorId" element={<VendorProducts />} />
+                      <Route path="/admin/my-orders" element={<AdminOrders />} />
+                      <Route path="/admin/my-customers" element={<AdminUsers />} />
+
                     </Route>
 
                     <Route path="/vendor" element={
@@ -57,6 +65,7 @@ function App() {
                       <Route index element={<VendorDashboard />} />
                       <Route path="/vendor/add-product" element={<AddProductPage />} />
                       <Route path="/vendor/products/:id/edit" element={<EditProduct />} />
+                      <Route path="/vendor/my-orders" element={<VendorOrders />} />
 
                     </Route>
 

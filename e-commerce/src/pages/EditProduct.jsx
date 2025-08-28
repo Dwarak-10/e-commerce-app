@@ -21,8 +21,14 @@ const EditProduct = () => {
     const navigate = useNavigate()
     const [openDialog, setOpenDialog] = useState(false)
     const [dialogMessage, setDialogMessage] = useState("")
+    const [preview, setPreview] = useState(null);
+    const [dialogTitle, setDialogTitle] = useState("")
 
-    const handleCloseDialog = () => setOpenDialog(false)
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        navigate("/vendor/my-products");
+    }
 
 
     const formik = useFormik({
@@ -36,24 +42,63 @@ const EditProduct = () => {
             name: Yup.string().required('Title is required'),
             description: Yup.string().required('Description is required'),
             price: Yup.number().required('Price is required').positive('Must be positive'),
-            image: Yup.string().url('Must be a valid URL')
+            image: Yup.mixed()
+                .required("Image is required")
+                .test("fileType", "Only image files are allowed", (value) => {
+                    if (!value) return false;
+                    if (typeof value === "string") {
+                        // Accept strings that look like URLs (basic check)
+                        return /^https?:\/\/.+\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(value);
+                    }
+                    // For File objects, validate MIME type
+                    return value.type?.startsWith("image/");
+                })
+                .test("fileSize", "File size is too large", (value) => {
+                    // Only validate size if it's a File object
+                    if (value && typeof value !== "string") {
+                        return value.size <= 2 * 1024 * 1024; // 2MB
+                    }
+                    return true; // skip size check for strings
+                }),
+
         }),
         onSubmit: async (values) => {
             try {
-                await api.put(`/api/vendor/products/${id}/`, values)
-                navigate('/vendor/my-products')
+                const formData = new FormData();
+                // Append fields except image first
+                for (const key in values) {
+                    if (key !== "image") {
+                        formData.append(key, values[key]);
+                    }
+                }
+                // Append image only if it is a File object (new upload)
+                if (values.image && values.image instanceof File) {
+                    formData.append("image", values.image);
+                }
+
+                await api.put(`/api/vendor/products/${id}/`, formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                });
+                setDialogTitle("Success");
+                setDialogMessage("Successfully updated product.");
+                setOpenDialog(true);
             } catch (err) {
-                setDialogMessage("Update failed. Please try again.")
-                setOpenDialog(true)
-                console.error(err)
+                setDialogTitle("Error");
+                setDialogMessage("Update failed. Please try again.");
+                setOpenDialog(true);
+                console.error(err);
             }
         }
+
+
     })
 
     const fetchProduct = async () => {
         try {
             const { data } = await api.get(`/api/vendor/products/${id}/`)
-            console.log("Fetched Product:", data)
+            // console.log("Fetched Product:", data)
             formik.setValues({
                 name: data.name,
                 description: data.description,
@@ -65,6 +110,27 @@ const EditProduct = () => {
             setOpenDialog(true)
         }
     }
+
+
+    const imageSrc = preview || (typeof formik.values.image === 'string' && formik.values.image !== "" ? formik.values.image : null);
+    const handleImageChange = (event) => {
+        const file = event.currentTarget.files[0];
+        formik.setFieldValue("image", file);
+
+        if (file) {
+            const objectUrl = URL.createObjectURL(file);
+            setPreview(objectUrl);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (preview) {
+                URL.revokeObjectURL(preview);
+            }
+        };
+    }, [preview]);
+
 
     useEffect(() => {
         fetchProduct()
@@ -115,17 +181,24 @@ const EditProduct = () => {
                             helperText={formik.touched.price && formik.errors.price}
                         />
 
-                        <TextField
-                            fullWidth
-                            label="Image URL"
-                            name="image"
-                            // type='file'
-                            value={formik.values.image}
-                            onChange={formik.handleChange}
-                            error={formik.touched.image && Boolean(formik.errors.image)}
-                            helperText={formik.touched.image && formik.errors.image}
-                        />
 
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #ccc", padding: 1, borderRadius: 1, textAlign: "center" }}>
+                            <label htmlFor="image" className='cursor-pointer'>Upload Image</label>
+
+                            <img src={imageSrc} className='w-20 h-20 object-contain' alt="Loading..." />
+                            <input
+                                id="image"
+                                name="image"
+                                style={{ display: "none" }}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                            />
+                        </Box>
+
+                        {formik.touched.image && formik.errors.image && (
+                            <div style={{ color: "red", fontSize: 12 }}>{formik.errors.image}</div>
+                        )}
                         <Button
                             type="submit"
                             variant="contained"
@@ -139,7 +212,7 @@ const EditProduct = () => {
             </Paper>
             {/* Error Dialog */}
             <Dialog open={openDialog} onClose={handleCloseDialog}>
-                <DialogTitle color='error'>Error</DialogTitle>
+                <DialogTitle color={dialogTitle === "Error" ? 'error' : 'success'}>{dialogTitle}</DialogTitle>
                 <DialogContent>
                     <Typography>{dialogMessage}</Typography>
                 </DialogContent>
