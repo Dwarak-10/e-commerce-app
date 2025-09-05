@@ -205,7 +205,7 @@ const AddProductPage = () => {
                             <img
                               src={preview}
                               alt="Preview"
-                              style={{ width: 80, height: 80, objectFit: "cover", marginLeft: 10 }}
+                              style={{ width: 80, height: 80, objectFit: "contain", marginLeft: 10 }}
                             />
                           )}
 

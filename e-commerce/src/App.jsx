@@ -25,6 +25,7 @@ import RoleRedirect from "./components/RoleRedirect";
 import VendorOrders from "./pages/VendorOrders";
 import AdminOrders from "./pages/AdminOrders";
 import AdminUsers from "./pages/AdminUsers";
+import WebSocketListener from "./components/WebSocketListener";
 
 function App() {
   const queryClient = new QueryClient()
@@ -36,8 +37,10 @@ function App() {
           <QueryClientProvider client={queryClient}>
             <SnackbarProvider maxSnack={3} autoHideDuration={2000} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
               <BrowserRouter basename="/" >
+               <WebSocketListener /> 
                 <Routes>
                   <Route path="/" element={<Body />}>
+
                     <Route path="/" element={<RoleRedirect />} />
                     <Route path="/login" element={<LoginForm />} />
 
@@ -66,14 +69,24 @@ function App() {
                       <Route path="/vendor/add-product" element={<AddProductPage />} />
                       <Route path="/vendor/products/:id/edit" element={<EditProduct />} />
                       <Route path="/vendor/my-orders" element={<VendorOrders />} />
+                      <Route path="/vendor/my-products" element={<MyProducts />} />
 
                     </Route>
 
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/home" element={<HomePage />} />
-                    <Route path="/products/:id" element={<ProductView />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/vendor/my-products" element={<MyProducts />} />
+                    <Route element={<RoleGuard allowedRoles={["customer"]} >
+                      <Outlet />
+                    </RoleGuard>}>
+                      <Route path="/home" element={<HomePage />} />
+                      <Route path="/cart" element={<CartPage />} />
+                    </Route>
+
+
+                    <Route element={<RoleGuard allowedRoles={["admin", "vendor", "customer"]} >
+                      <Outlet />
+                    </RoleGuard>}>
+                      <Route path="/products/:id" element={<ProductView />} />
+                      <Route path="/profile" element={<Profile />} />
+                    </Route>
                   </Route>
                 </Routes>
               </BrowserRouter>

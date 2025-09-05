@@ -111,7 +111,7 @@ export default function AdminDashboard() {
         <div className="flex justify-between items-center mb-6 bg-white p-6 rounded-lg shadow">
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Vendors Overview</h2>
-            <p className="mb-4 text-gray-700">Total Vendors: <span className="font-bold">{vendors.length}</span></p>
+            <p className="mb-4 text-gray-700">Total Vendors: <span className="font-bold">{adminStats?.Total_Vendors}</span></p>
           </div>
           <Link to="/admin/vendor-list">
             <Button

@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import api from '../utlis/api'
+import { useQuery } from '@tanstack/react-query';
+import api from '../utlis/api';
 import {
     Card,
     CardContent,
@@ -7,61 +7,54 @@ import {
     TextField,
     Pagination,
     CircularProgress,
-    CardActions,
-    Button,
-} from '@mui/material'
-import { useEffect, useState } from 'react'
+    Box,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
 
-
-const fetchCustomers = async () => {
-    const { data } = await api.get("/api/admin/customers/")
-    // console.log("Customers data:", data)
-    return data
-}
+const fetchCustomers = async (pageNum, pageSize, searchTerm) => {
+    let url = `/api/admin/customers/?page-num=${pageNum}&page-size=${pageSize}`;
+    if (searchTerm) {
+        url += `&search=${encodeURIComponent(searchTerm)}`; // Assuming backend supports search param
+    }
+    const { data } = await api.get(url);
+    // console.log('Customers data:', data);
+    return data;
+};
 
 const AdminUsers = () => {
-    const { data: customers, isLoading: isCustomerLoading, isError: isCustomerError } = useQuery({
-        queryKey: ["customers"],
-        queryFn: fetchCustomers,
-    })
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const customersPerPage = 5;
 
-    const [searchTerm, setSearchTerm] = useState('')
-    const [filteredCustomers, setFilteredCustomers] = useState([])
-    const [currentPage, setCurrentPage] = useState(1)
-    const customersPerPage = 5
+    const { data: customersData, isLoading: isCustomerLoading, isError: isCustomerError } = useQuery({
+        queryKey: ['customers', currentPage, searchTerm],
+        queryFn: () => fetchCustomers(currentPage, customersPerPage, searchTerm),
+        keepPreviousData: true,
+        staleTime: 5000,
+    });
 
-    // Filter logic
+
+    // Reset to page 1 when searchTerm changes
     useEffect(() => {
-        const filtered = customers?.filter((c) =>
-            [c.username, c.email, c?.company_name].some((field) =>
-                (field || "").toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        )
-        setFilteredCustomers(filtered)
-        setCurrentPage(1)
-    }, [customers, searchTerm])
+        setCurrentPage(1);
+    }, [searchTerm]);
 
-    //  Pagination logic
-    const indexOfLastCustomer = currentPage * customersPerPage
-    const indexOfFirstCustomer = indexOfLastCustomer - customersPerPage
-    const currentCustomers = filteredCustomers?.slice(indexOfFirstCustomer, indexOfLastCustomer)
-    const totalPages = Math.ceil(filteredCustomers?.length / customersPerPage)
-
-    const handlePageChange = (event, value) => {
-        setCurrentPage(value)
-    }
-
-    if (isCustomerLoading) {
+    if (isCustomerLoading)
         return (
             <div className="flex justify-center items-center h-screen w-screen">
                 <CircularProgress />
             </div>
-        )
-    }
+        );
 
-    if (isCustomerError) {
-        return <div className="text-center text-red-500">Failed to fetch customers.</div>
-    }
+    if (isCustomerError)
+        return <div className="text-center text-red-500">Failed to fetch customers.</div>;
+
+    const results = customersData?.results || [];
+    const totalPages = customersData?.total_pages || 1;
+
+    const handlePageChange = (event, value) => {
+        setCurrentPage(value);
+    };
 
     return (
         <div className="m-6 bg-white p-6 rounded-lg shadow w-[80%] mx-auto">
@@ -78,47 +71,43 @@ const AdminUsers = () => {
                 sx={{ mb: 4 }}
             />
 
-            {currentCustomers?.length === 0 ? (
+            {results.length === 0 ? (
                 <p className="text-gray-500">No customers found.</p>
             ) : (
                 <div className="space-y-4">
-                    {currentCustomers?.map((customer, index) => (
-                        <Card key={customer.id} className="shadow-sm flex  justify-between items-center p-2">
+                    {results.map((customer, index) => (
+                        <Card
+                            key={customer.id}
+                            className="shadow-sm flex justify-between items-center p-2"
+                        >
                             <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-
-                                {/* <div className="flex flex-col gap-2"> */}
-                                <div className='flex gap-2'>
-                                    <Typography variant="h6"> {((currentPage - 1) * customersPerPage) + index + 1 + "."}</Typography>
-                                    <div>
-                                        <Typography variant="h6">Name: {customer.username}</Typography>
-
-                                        <Typography variant="body2" color="textSecondary">
-                                            Email: {customer.email}
-                                        </Typography>
-                                    </div>
-
+                                <Typography variant="h6">
+                                    {(currentPage - 1) * customersPerPage + index + 1}.
+                                </Typography>
+                                <div>
+                                    <Typography variant="h6">Name: {customer.username}</Typography>
+                                    <Typography variant="body2" color="textSecondary">
+                                        Email: {customer.email}
+                                    </Typography>
                                 </div>
-
-                                {/* </div> */}
                             </CardContent>
-                            
                         </Card>
                     ))}
                 </div>
             )}
 
             {totalPages > 1 && (
-                <div className="flex justify-center mt-6">
+                <Box className="flex justify-center mt-6">
                     <Pagination
                         count={totalPages}
                         page={currentPage}
                         onChange={handlePageChange}
                         color="primary"
                     />
-                </div>
+                </Box>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default AdminUsers
+export default AdminUsers;

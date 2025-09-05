@@ -1,44 +1,26 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
-    notifications: [],
-};
-
 const notificationSlice = createSlice({
-    name: 'notifications',
-    initialState,
-    reducers: {
-        addNotification(state, action) {
-            state.notifications.push(action.payload);
-        },
-        markNotificationRead(state, action) {
-            const id = action.payload;
-            const notification = state.notifications.find(n => n.id === id);
-            if (notification) {
-                notification.is_read = false;
-            }
-        },
-        markAllRead(state) {
-            state.notifications.forEach(n => {
-                n.is_read = false;
-            });
-        },
-        removeNotification(state, action) {
-            const id = action.payload;
-            state.notifications = state.notifications.filter(n => n.id !== id);
-        },
-        clearNotifications(state) {
-            state.notifications = [];
-        },
+  name: 'notification',
+  initialState: {
+    notifications: [],
+    unreadCount: 0,
+  },
+  reducers: {
+    addNotification(state, action) {
+      const { message, unread_count } = action.payload;
+      state.notifications.unshift({ message, timestamp: new Date().toISOString() });
+      state.unreadCount = unread_count;
     },
+    markAllRead(state) {
+      state.unreadCount = 0;
+    },
+    resetNotifications(state) {
+      state.notifications = [];
+      state.unreadCount = 0;
+    },
+  },
 });
 
-export const {
-    addNotification,
-    markNotificationRead,
-    markAllRead,
-    removeNotification,
-    clearNotifications,
-} = notificationSlice.actions;
-
+export const { addNotification, markAllRead, resetNotifications } = notificationSlice.actions;
 export default notificationSlice.reducer;

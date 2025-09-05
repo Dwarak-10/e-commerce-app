@@ -22,7 +22,6 @@ const validationSchema = Yup.object({
 })
 
 const createVendor = async (vendorData) => {
-    // const { data } = await api.post('/vendors', vendorData)
     const { data } = await api.post('/api/admin/add/vendor/', vendorData)
     return data
 }
@@ -63,7 +62,7 @@ const AddVendor = () => {
         },
         validationSchema,
         onSubmit: (values) => {
-            console.log(values)
+            // console.log(values)
             mutation.mutate(values)
         },
     })

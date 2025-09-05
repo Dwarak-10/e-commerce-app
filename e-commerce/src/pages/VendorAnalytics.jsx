@@ -9,41 +9,50 @@ import {
   TableHead, TableRow, Paper, TablePagination
 } from '@mui/material'
 
-const fetchVendorAnalytics = async (vendorId) => {
-  const { data } = await api.get(`/api/admin/vendors/${vendorId}/analytics/`)
-  return data
-}
+const fetchVendorAnalytics = async (vendorId, page, rowsPerPage, searchTerm, filters) => {
+  let url = `/api/admin/vendors/${vendorId}/analytics/?page-num=${page + 1}&page-size=${rowsPerPage}`;
+  if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) url += `&${key}=${encodeURIComponent(value)}`;
+  });
+  const { data } = await api.get(url);
+  // console.log('Fetched Vendor Analytics:', data);
+  return data;
+};
+
 
 const VendorAnalytics = () => {
   const { id } = useParams()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState({});
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['vendor-analytics', id],
-    queryFn: () => fetchVendorAnalytics(id),
+    queryKey: ['vendor-analytics', id, page, rowsPerPage, searchTerm, filters],
+    queryFn: () => fetchVendorAnalytics(id, page, rowsPerPage, searchTerm, filters),
+    keepPreviousData: true, // Ensures smooth pagination experience
     enabled: !!id,
-  })
+  });
 
-  const products = data?.Products || []
+
+  const products = data?.results || []
   const totalRevenue = Number(data?.Summary?.TotalRevenue) || 0
   const totalSold = Number(data?.Summary?.TotalProductsSold) || 0
 
-  const filteredProducts = useMemo(() => {
-    if (!searchTerm) return products
-    return products.filter(item =>
-      [item?.Product, String(item?.Price)].some(field =>
-        field?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    )
-  }, [searchTerm, products])
-
   const handlePageChange = (_, newPage) => setPage(newPage)
   const handleRowsPerPageChange = (e) => {
-    setRowsPerPage(parseInt(e.target.value, 10))
-    setPage(0)
-  }
+    setRowsPerPage(parseInt(e.target.value, 10));
+    setPage(0);
+  };
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setPage(0);
+  };
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setPage(0);
+  };
 
   if (isLoading) return <Box className="flex justify-center items-center h-screen w-screen"><CircularProgress /></Box>
   if (isError) return <Typography className="text-red-500 text-center" variant="h6" mt={5}>Failed to load analytics.</Typography>
@@ -87,14 +96,14 @@ const VendorAnalytics = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredProducts.length === 0 ? (
+            {products.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} align="center">No Data Available</TableCell>
               </TableRow>
             ) : (
-              filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+              products?.map((row, index) => (
                 <TableRow key={row.id ?? index}>
-                  <TableCell>{page * rowsPerPage + index + 1}. {row.Product}</TableCell>
+                  <TableCell>{(page * rowsPerPage) + index + 1}. {row.Product}</TableCell>
                   <TableCell align="right">{row.QuantitySold}</TableCell>
                   <TableCell align="right">{Number(row.Price).toFixed(2)}</TableCell>
                   <TableCell align="right">{Number(row.Total).toFixed(2)}</TableCell>
@@ -103,16 +112,16 @@ const VendorAnalytics = () => {
             )}
           </TableBody>
         </Table>
-
         <TablePagination
           component="div"
-          count={filteredProducts.length}
+          count={data?.count || 0}
           page={page}
           onPageChange={handlePageChange}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleRowsPerPageChange}
           rowsPerPageOptions={[5, 10, 25]}
         />
+
       </TableContainer>
     </Box>
   )

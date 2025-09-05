@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import api from '../utlis/api'
+import { useQuery } from '@tanstack/react-query';
+import api from '../utlis/api';
 import {
     Card,
     CardContent,
@@ -9,59 +9,72 @@ import {
     CircularProgress,
     CardActions,
     Button,
-} from '@mui/material'
-import { useEffect, useState } from 'react'
+} from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
 
+const fetchVendors = async (page, rowsPerPage, searchTerm, filters) => {
+    let url = `/api/admin/vendors/?page-num=${page}&page-size=${rowsPerPage}`;
 
-const fetchVendors = async () => {
-    const { data } = await api.get("/api/admin/vendors/")
-    console.log("Vendors data:", data)
-    return data
-}
+    if (searchTerm) {
+        url += `&search=${encodeURIComponent(searchTerm)}`;
+    }
+
+    Object.entries(filters).forEach(([key, value]) => {
+        if (value) url += `&${key}=${encodeURIComponent(value)}`;
+    });
+
+    const { data } = await api.get(url);
+    // console.log('Vendors data:', data);
+    return data;
+};
 
 const VendorList = () => {
-    const { data: vendors, isLoading: isVendorLoading, isError: isVendorError } = useQuery({
-        queryKey: ["vendors"],
-        queryFn: fetchVendors,
-    })
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [filters, setFilters] = useState({});
+    const [vendorsPerPage, setVendorsPerPage] = useState(5);
 
-    const [searchTerm, setSearchTerm] = useState('')
-    const [filteredVendors, setFilteredVendors] = useState([])
-    const [currentPage, setCurrentPage] = useState(1)
-    const vendorsPerPage = 5
+    const searchRef = useRef(null);
 
-    // Filter logic
     useEffect(() => {
-        const filtered = vendors?.filter((v) =>
-            [v.username, v.email, v?.company_name].some((field) =>
-                (field || "").toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        )
-        setFilteredVendors(filtered)
-        setCurrentPage(1)
-    }, [vendors, searchTerm])
+        if (searchRef.current) {
+            searchRef.current.focus();
+        }
+    }, []);
 
-    //  Pagination logic
-    const indexOfLastVendor = currentPage * vendorsPerPage
-    const indexOfFirstVendor = indexOfLastVendor - vendorsPerPage
-    const currentVendors = filteredVendors?.slice(indexOfFirstVendor, indexOfLastVendor)
-    const totalPages = Math.ceil(filteredVendors?.length / vendorsPerPage)
+    const {
+        data: vendors,
+        isLoading: isVendorLoading,
+        isError: isVendorError,
+    } = useQuery({
+        queryKey: ['vendors', currentPage, vendorsPerPage, searchTerm, filters],
+        queryFn: () => fetchVendors(currentPage, vendorsPerPage, searchTerm, filters),
+        keepPreviousData: true,
+    });
 
-    const handlePageChange = (event, value) => {
-        setCurrentPage(value)
-    }
+    const handlePageChange = (_, newPage) => {
+        setCurrentPage(newPage);
+    };
+
+    const handleRowsPerPageChange = (e) => {
+        setVendorsPerPage(parseInt(e.target.value, 10));
+        setCurrentPage(1);
+    };
 
     if (isVendorLoading) {
         return (
             <div className="flex justify-center items-center h-screen w-screen">
                 <CircularProgress />
             </div>
-        )
+        );
     }
 
     if (isVendorError) {
-        return <div className="text-center text-red-500">Failed to fetch vendors.</div>
+        return <div className="text-center text-red-500">Failed to fetch vendors.</div>;
     }
+
+    const currentVendors = vendors?.results || [];
+    const totalPages = vendors?.total_pages || 1;
 
     return (
         <div className="m-6 bg-white p-6 rounded-lg shadow w-[80%] mx-auto">
@@ -69,29 +82,36 @@ const VendorList = () => {
                 Vendor List
             </Typography>
 
+            {/* Search bar */}
             <TextField
                 fullWidth
                 label="Search by name, email or company"
                 variant="outlined"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1); 
+                }}
                 sx={{ mb: 4 }}
             />
 
+            {/* Vendor cards */}
             {currentVendors?.length === 0 ? (
                 <p className="text-gray-500">No vendors found.</p>
             ) : (
                 <div className="space-y-4">
-                    {currentVendors?.map((vendor, index) => (
-                        <Card key={vendor.id} className="shadow-sm flex  justify-between items-center p-4">
+                    {currentVendors.map((vendor, index) => (
+                        <Card
+                            key={vendor.id}
+                            className="shadow-sm flex justify-between items-center p-4"
+                        >
                             <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-
-                                {/* <div className="flex flex-col gap-2"> */}
-                                <div className='flex gap-2'>
-                                    <Typography variant="h6"> {((currentPage - 1) * vendorsPerPage) + index + 1 + "."}</Typography>
+                                <div className="flex gap-2">
+                                    <Typography variant="h6">
+                                        {(vendors?.current_page - 1) * vendorsPerPage + index + 1}.
+                                    </Typography>
                                     <div>
                                         <Typography variant="h6">Name: {vendor.username}</Typography>
-
                                         <Typography variant="body2" color="textSecondary">
                                             Email: {vendor.email}
                                         </Typography>
@@ -102,10 +122,7 @@ const VendorList = () => {
                                             Company: {vendor.company_name || vendor.company || 'N/A'}
                                         </Typography>
                                     </div>
-
                                 </div>
-
-                                {/* </div> */}
                             </CardContent>
                             <CardActions>
                                 <Button
@@ -127,8 +144,8 @@ const VendorList = () => {
                                         backgroundColor: '#1976d2',
                                         textTransform: 'none',
                                         '&:hover': {
-                                            backgroundColor: '#125ea6'
-                                        }
+                                            backgroundColor: '#125ea6',
+                                        },
                                     }}
                                     size="medium"
                                 >
@@ -140,18 +157,19 @@ const VendorList = () => {
                 </div>
             )}
 
+            {/*  Pagination */}
             {totalPages > 1 && (
                 <div className="flex justify-center mt-6">
                     <Pagination
                         count={totalPages}
-                        page={currentPage}
+                        page={vendors?.current_page || 1}
                         onChange={handlePageChange}
                         color="primary"
                     />
                 </div>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default VendorList
+export default VendorList;

@@ -10,11 +10,15 @@ import { useState } from 'react'
 
 const fetchProductById = async (id) => {
     try {
-        const { data } = await api.get(`/api/vendor/products/${id}/`)
+
+        const userRole = JSON.parse(localStorage.getItem('user'))?.role;
+        const url = ['vendor', 'admin'].includes(userRole) ? `/api/vendor/products/${id}/` : `/api/product/details/${id}/`;
+        const { data } = await api.get(url);
         // console.log("Product data:", data)
         return data
     } catch (error) {
-        throw new Error('Error fetching product')
+        console.log(error)
+        // throw new Error('Error fetching product')
     }
 }
 
@@ -50,39 +54,33 @@ const ProductView = () => {
         )
     }
 
-    if (isError || !product) {
-        return <div className="text-center text-red-500 mt-10">Product not found.</div>
+    if (isError) {
+        return <div className="text-center text-red-500 mt-10">No product found.</div>
     }
 
     const totalSales = product.total_quantity_sold || 0
     const totalRevenue = product.total_revenue || 0
 
-    const COLORS = ['#1976d2', '#43a047']
 
     const chartData = [
-        { name: 'Sold Quantity', sold: Number(product.total_quantity_sold) || 0, revenue: 0 },
-        { name: 'Revenue', revenue: Number(product.total_revenue) || 0, sold: 0 },
+        { name: 'Revenue', revenue: Number(product.total_revenue) || 0 },
     ];
 
     const CustomTooltip = ({ active, payload }) => {
         if (!active || !payload || payload.length === 0) return null;
-        const barData = payload.find(entry => entry.value !== 0);
 
-        if (!barData) return null;
+        const revenueBar = payload.find(entry => entry.dataKey === "revenue");
 
+        if (!revenueBar) return null;
+        const barData = revenueBar;
         return (
             <div style={{ backgroundColor: '#fff', padding: 10, border: '1px solid #ccc' }}>
                 <p style={{ margin: 0, color: barData.color, fontWeight: 'bold' }}>
-                    {barData.name}: {' '}
-                    {barData.name === 'Revenue'
-                        ? `₹ ${barData.value.toLocaleString()}`
-                        : barData.value}
+                    Revenue: ₹ {barData?.value?.toLocaleString()}
                 </p>
             </div>
         );
     };
-
-
 
     return (
         <div className="flex justify-around items-center px-4 py-8 bg-gray-100 min-h-screen">
@@ -166,17 +164,19 @@ const ProductView = () => {
 
                     <Box>
 
+
+
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                                 <XAxis dataKey="name" />
                                 <YAxis />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Legend />
-                                <Bar dataKey="sold" name="Sold Quantity" fill="#1976d2" />
-                                <Bar dataKey="revenue" name="Revenue" fill="#43a047" />
+                                <Bar dataKey="revenue" name="Revenue" fill="#43a047" barSize={200} />
                             </BarChart>
-
                         </ResponsiveContainer>
+
+
                         <div>
                             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                                 Total Sales: {totalSales.toLocaleString()}

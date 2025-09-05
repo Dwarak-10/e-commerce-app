@@ -21,6 +21,7 @@ import api from '../utlis/api';
 
 const fetchOrders = async () => {
   const { data } = await api.get('/api/admin/orders/');
+  console.log('Fetched Orders:', data);
   return data;
 };
 
