@@ -12,15 +12,16 @@ const notificationSlice = createSlice({
       state.notifications.unshift({ message, timestamp: new Date().toISOString() });
       state.unreadCount = unread_count;
     },
-    markAllRead(state) {
+    resetNotifications: (state) => {
+      state.notifications = state.notifications.map(n => ({ ...n}));
       state.unreadCount = 0;
     },
-    resetNotifications(state) {
+    clearNotifications(state) {
       state.notifications = [];
       state.unreadCount = 0;
     },
   },
 });
 
-export const { addNotification, markAllRead, resetNotifications } = notificationSlice.actions;
+export const { addNotification, resetNotifications, clearNotifications } = notificationSlice.actions;
 export default notificationSlice.reducer;

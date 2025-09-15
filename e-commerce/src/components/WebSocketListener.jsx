@@ -11,7 +11,7 @@ function WebSocketListener() {
     // dispatch(resetNotifications())
 
     const  {lastJsonMessage}  = useWebSocket(socketUrl);
-    console.log(lastJsonMessage)
+    // console.log("Last JSON Message:", lastJsonMessage)
     useEffect(() => {
         if (lastJsonMessage) {
             const { message, unread_count } = lastJsonMessage;

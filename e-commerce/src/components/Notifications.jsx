@@ -1,24 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { Box, Typography, Divider, Popover } from '@mui/material';
 import moment from 'moment';
 import api from '../utlis/api';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
-
-
-// console.log(userToken)
-const adminNotification = async () => {
-    const { data } = await api.get('/api/notifications/')
-    // console.log(data)
-    return data
-}
-
-const vendorNotification = async () => {
-    const { data } = await api.get('/api/notifications/')
-    // console.log(data)
-    return data
-}
-
+import { clearNotifications, resetNotifications } from '../utlis/notificationSlice';
+import { useNotificationWebSocket } from '../utlis/useNotificationWebsocket';
 
 const NotificationPopover = ({
     anchorEl,
@@ -30,29 +17,28 @@ const NotificationPopover = ({
     const notifications = useSelector(state => state.notification?.notifications);
     console.log("Notifications from redux:", notifications)
     const dispatch = useDispatch();
+    const sendJsonMessage = useNotificationWebSocket();
 
-    const { data: adminNotifications } = useQuery({
-        queryKey: ['adminNotifications'],
-        queryFn: adminNotification,
-    })
-    const { data: vendorNotifications } = useQuery({
-        queryKey: ['vendorNotifications'],
-        queryFn: vendorNotification,
-    })
+    const handleMarkAsSeen = (notificationIds) => {
+        sendJsonMessage({ type: "mark_seen", notification_ids: notificationIds });
+    };
 
-
-    const user = useSelector((store) => store?.user)
-    const role = user?.role
-
-    // const notifications = role === "admin" ? adminNotifications : vendorNotifications
-    // const notifications = lastJsonMessage?.message
+    const handleClose = () => {
+        dispatch(resetNotifications());
+        const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+        if (unreadIds.length) {
+            handleMarkAsSeen(unreadIds);
+        }
+        if (onClose) onClose();
+        dispatch(clearNotifications())
+    };
 
     return (
         <Popover
             id={popoverId}
             open={open}
             anchorEl={anchorEl}
-            onClose={onClose}
+            onClose={handleClose}
             anchorOrigin={{
                 vertical: 'bottom',
                 horizontal: 'right',
@@ -68,21 +54,25 @@ const NotificationPopover = ({
                     Notifications
                 </Typography>
                 <Divider sx={{ mb: 1 }} />
-                {(!notifications || notifications.length === 0) ? (
+                {(!notifications || notifications.length === 0 || notifications.every(note => note.is_read)) ? (
                     <Typography variant="body2" color="textSecondary">
                         No new notifications
                     </Typography>
                 ) : (
-                    notifications
-                        // .filter(note => note.is_read)
+
+                    notifications.filter(note => !note.is_read)
                         .map((note, index) => (
                             <Typography
                                 key={note.id || index}
                                 variant="body2"
-                                sx={{ mb: 1, wordWrap: 'break-word', cursor: 'pointer' }}
+                                sx={{
+                                    mb: 1,
+                                    wordWrap: 'break-word',
+                                    cursor: 'pointer',
+                                    fontWeight: note.is_read ? 'normal' : 'bold'
+                                }}
                             >
-                                • {note?.message}
-                                {' '}
+                                • {note.message} {' '}
                                 <Box component="span" sx={{ fontSize: 11, color: 'gray', fontStyle: 'italic' }}>
                                     ({moment(note.timestamp).fromNow()})
                                 </Box>

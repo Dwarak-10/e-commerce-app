@@ -32,7 +32,7 @@ import { removeUser } from '../utlis/userSlice'
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '../utlis/api'
 import moment from 'moment';
-import { addNotification, markAllRead } from '../utlis/notificationSlice'
+import { addNotification } from '../utlis/notificationSlice'
 import NotificationPopover from '../components/Notifications';
 
 
@@ -59,8 +59,8 @@ const Navbar = () => {
     const [dialogMessage, setDialogMessage] = useState('');
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-    const unreadCount = useSelector(state => state.notification?.unreadCount);
-    console.log("Unread Count from redux:", unreadCount)
+    const unreadCount = useSelector(state => state.notification?.unreadCount || 0);
+    // console.log("Unread Count from redux:", unreadCount)
 
 
     // console.log("LoggedIn User from localStorage :", localStorage.getItem("user"))
@@ -145,7 +145,7 @@ const Navbar = () => {
                         {role !== "customer" && (
                             <Tooltip title="Notifications" arrow>
                                 <IconButton color="inherit" onClick={handleNotificationClick}>
-                                    <Badge badgeContent={unreadCount === 0 ? 0 : unreadCount} color="error">
+                                    <Badge badgeContent={unreadCount} color="error">
                                         <NotificationsIcon />
                                     </Badge>
                                 </IconButton>
